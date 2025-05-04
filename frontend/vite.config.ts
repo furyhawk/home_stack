@@ -11,4 +11,7 @@ export default defineConfig({
     },
   },
   plugins: [react(), TanStackRouterVite()],
+  server: {
+    allowedHosts: ["dev.lan", "dev.local", "localhost", "dev.lan:5173", "dev.local:5173", "localhost:5173"],
+  }
 })
