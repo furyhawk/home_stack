@@ -17,7 +17,7 @@ down:
 	@echo "Containers stopped. Use 'make up' to start them again."
 
 build:
-	podman compose --podman-build-args="--network=host" build
+	podman-compose build --build-arg network=host
 	@echo "Containers built. Use 'make up' to start them."
 
 restart: down build up
