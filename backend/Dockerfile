@@ -24,23 +24,17 @@ ENV UV_LINK_MODE=copy
 
 # Install dependencies
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
-RUN --mount=type=cache,target=/root/.cache/uv \
---mount=type=bind,source=uv.lock,target=uv.lock \
---mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-uv sync --frozen --no-install-project
+# Copy files instead of using bind mounts to avoid networking issues
+COPY ./pyproject.toml ./uv.lock /app/
+RUN uv sync --frozen --no-install-project
 
 ENV PYTHONPATH=/app
 
 COPY ./scripts /app/scripts
-
-COPY ./pyproject.toml ./uv.lock /app/
 COPY ./alembic.ini /app/
-
 COPY ./app /app/app
 
 # Sync the project
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync
+RUN uv sync
 
 CMD ["fastapi", "run", "--workers", "4", "app/main.py"]
