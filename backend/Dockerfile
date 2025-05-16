@@ -4,37 +4,17 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app/
 
-# Install uv
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
-COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /uvx /bin/
+# Copy requirements
+COPY ./pyproject.toml /app/
 
-# Place executables in the environment at the front of the path
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#using-the-environment
-ENV PATH="/app/.venv/bin:$PATH"
-
-# Compile bytecode
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#compiling-bytecode
-ENV UV_COMPILE_BYTECODE=1
-
-# uv Cache
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#caching
-ENV UV_LINK_MODE=copy
-
-# Copy dependency files first
-
-# Install dependencies
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
-# Copy files instead of using bind mounts to avoid networking issues
-COPY ./pyproject.toml ./uv.lock /app/
-RUN uv sync --frozen --no-install-project
+# Install dependencies using pip instead of uv to avoid networking issues
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -e .
 
 ENV PYTHONPATH=/app
 
 COPY ./scripts /app/scripts
 COPY ./alembic.ini /app/
 COPY ./app /app/app
-
-# Sync the project
-RUN uv sync
 
 CMD ["fastapi", "run", "--workers", "4", "app/main.py"]
