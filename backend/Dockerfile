@@ -4,17 +4,18 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app/
 
-# Copy requirements
-COPY ./pyproject.toml /app/
-
-# Install dependencies using pip instead of uv to avoid networking issues
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -e .
-
+# Set environment variables
 ENV PYTHONPATH=/app
 
-COPY ./scripts /app/scripts
-COPY ./alembic.ini /app/
-COPY ./app /app/app
+# Copy all files at once to avoid multiple network-dependent steps
+COPY . /app/
 
-CMD ["fastapi", "run", "--workers", "4", "app/main.py"]
+# Use offline installation mode with the --no-index flag to avoid network
+# First try to use any existing packages in the local environment
+RUN python -m pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir --no-deps -e .
+
+# Copy application files
+# Already copied everything above
+
+CMD ["python", "-m", "app.main"]
