@@ -1,0 +1,13 @@
+/* Fix marker icons in production */
+.leaflet-default-icon-path {
+  background-image: url(https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png);
+}
+
+.leaflet-marker-shadow {
+  background-image: url(https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png);
+}
+
+/* Override container (optional) */
+.leaflet-container {
+  font-family: inherit;
+}

@@ -4,19 +4,18 @@ import {
   Button,
   Container,
   Flex,
-  Grid,
   Heading,
-  Icon,
   Text,
 } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
-import { FiCloud, FiRefreshCw } from "react-icons/fi"
+import { FiRefreshCw } from "react-icons/fi"
 
 import { WeatherService } from "@/client"
 import WeatherErrorDisplay from "@/components/Weather/WeatherErrorDisplay"
 import WeatherLoadingAnimation from "@/components/Weather/WeatherLoadingAnimation"
+import WeatherForecast from "@/components/Weather/WeatherForecast"
 import useCustomToast from "@/hooks/useCustomToast"
 
 export const Route = createFileRoute("/_layout/weather")({
@@ -60,16 +59,6 @@ function Weather() {
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
-    })
-  }
-
-  // Format date for display
-  const formatDateTime = (dateTimeString: string) => {
-    const date = new Date(dateTimeString)
-    return date.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
     })
   }
 
@@ -172,51 +161,11 @@ function Weather() {
               </Flex>
             </Flex>
 
-            <Box>
-              <Box mb={4} textAlign="center">
-                <Text fontSize="md" fontWeight="bold">
-                  Valid Period:
-                </Text>
-                <Text fontSize="sm">
-                  {formatDateTime(data.data.items[0].valid_period.start)} - {formatDateTime(data.data.items[0].valid_period.end)}
-                </Text>
-                <Text mt={2} fontSize="sm" fontStyle="italic">
-                  Forecast: {data.data.items[0].valid_period.text}
-                </Text>
-              </Box>
-              
-              <Grid
-                templateColumns={{
-                  base: "repeat(1, 1fr)",
-                  sm: "repeat(2, 1fr)",
-                  md: "repeat(3, 1fr)",
-                  lg: "repeat(4, 1fr)",
-                }}
-                gap={4}
-              >
-                {getFilteredForecasts().map((forecast, index) => (
-                  <Box 
-                    key={`${forecast.area}-${index}`}
-                    borderWidth="1px" 
-                    borderRadius="md" 
-                    p={3}
-                    boxShadow="sm"
-                  >
-                    <Box pb={2}>
-                      <Heading size="sm" truncate>
-                        {forecast.area}
-                      </Heading>
-                    </Box>
-                    <Flex direction="column" alignItems="center">
-                      <Icon as={FiCloud} boxSize={8} mb={2} />
-                      <Text fontSize="sm" textAlign="center">
-                        {forecast.forecast}
-                      </Text>
-                    </Flex>
-                  </Box>
-                ))}
-              </Grid>
-            </Box>
+            <WeatherForecast 
+              forecasts={getFilteredForecasts()} 
+              validPeriod={data.data.items[0].valid_period}
+              areaMetadata={data.data.area_metadata || []}
+            />
 
             <Text mt={6} fontSize="xs" color="gray.500">
               Data provided by NEA through data.gov.sg API
