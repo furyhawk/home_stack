@@ -46,6 +46,8 @@ import type {
   UtilsTestEmailData,
   UtilsTestEmailResponse,
   UtilsHealthCheckResponse,
+  WeatherGetTwoHourForecastData,
+  WeatherGetTwoHourForecastResponse,
 } from "./types.gen"
 
 export class ItemsService {
@@ -544,6 +546,36 @@ export class UtilsService {
     return __request(OpenAPI, {
       method: "GET",
       url: "/api/v1/utils/health-check/",
+    })
+  }
+}
+
+export class WeatherService {
+  /**
+   * Get Two Hour Forecast
+   * Retrieve the latest two hour weather forecast from data.gov.sg API.
+   *
+   * - Updated half-hourly from NEA
+   * - Forecasts are given for multiple areas in Singapore
+   * @param data The data for the request.
+   * @param data.date SGT date for which to retrieve data (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)
+   * @param data.paginationToken Pagination token for retrieving subsequent data pages
+   * @returns WeatherResponse Successful Response
+   * @throws ApiError
+   */
+  public static getTwoHourForecast(
+    data: WeatherGetTwoHourForecastData = {},
+  ): CancelablePromise<WeatherGetTwoHourForecastResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/weather/two-hour-forecast",
+      query: {
+        date: data.date,
+        pagination_token: data.paginationToken,
+      },
+      errors: {
+        422: "Validation Error",
+      },
     })
   }
 }
