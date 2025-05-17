@@ -19,20 +19,20 @@ network:
 	@echo "Traefik network ready."
 
 up: network
-	podman compose --env-file $(ENV_FILE) -f docker-completed.yml -f docker-compose.override.yml up -d
+	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d
 
 down:
-	podman compose --env-file $(ENV_FILE) -f docker-completed.yml -f docker-compose.override.yml down
+	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml down
 	@echo "Containers stopped. Use 'make up' to start them again."
 
 build:
-	DOCKER_BUILDKIT=0 podman compose --env-file $(ENV_FILE) -f docker-completed.yml -f docker-compose.override.yml build --no-cache
+	DOCKER_BUILDKIT=0 podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml build --no-cache
 	@echo "Containers built. Use 'make up' to start them."
 
 restart: down build up
 
 reset:
-	podman compose --env-file $(ENV_FILE) -f docker-completed.yml -f docker-compose.override.yml down -v
+	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml down -v
 	podman system prune -f
 	podman volume prune -f
 	podman network prune -f
@@ -55,17 +55,17 @@ restore:
 	podman volume rm $(DB_VOLUME) || true
 	podman volume create --name $(DB_VOLUME)
 	podman volume import $(DB_VOLUME) --input $(LATEST_BACKUP)
-	podman compose --env-file $(ENV_FILE) -f docker-completed.yml -f docker-compose.override.yml up -d
+	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d
 	@echo "Backup and restore completed."
 	@echo "Please check the logs for any errors."
 	@echo "Use 'make logs' to view the logs."
 
 logs:
-	podman compose --env-file $(ENV_FILE) -f docker-completed.yml -f docker-compose.override.yml logs
+	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml logs
 	@echo "Logs for all containers:"
 
 clean:
-	podman compose --env-file $(ENV_FILE) -f docker-completed.yml -f docker-compose.override.yml down
+	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml down
 	podman volume rm $(DB_VOLUME)
 	@echo "Cleaned up all containers and volumes."
 
@@ -107,4 +107,4 @@ info:
 	@echo "\n===== Podman Images ====="
 	podman images
 	@echo "\n===== Podman Compose Config ====="
-	podman compose --env-file $(ENV_FILE) -f docker-completed.yml -f docker-compose.override.yml config
+	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml config
