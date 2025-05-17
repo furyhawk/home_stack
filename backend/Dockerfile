@@ -5,7 +5,6 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app/
 
 # Set environment variables
-=======
 # Install uv
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
 COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /uvx /bin/
@@ -41,7 +40,6 @@ RUN python -m pip install --no-cache-dir --upgrade pip && \
 
 # Copy application files
 # Already copied everything above
-=======
 # Sync the project
 RUN uv sync
 
