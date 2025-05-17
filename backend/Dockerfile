@@ -4,7 +4,6 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app/
 
-# Set environment variables
 # Install uv
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
 COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /uvx /bin/
@@ -21,26 +20,24 @@ ENV UV_COMPILE_BYTECODE=1
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#caching
 ENV UV_LINK_MODE=copy
 
-# Copy dependency files first
-COPY ./pyproject.toml ./uv.lock /app/
-
 # Install dependencies
-# Using a more compatible approach without buildx cache mounts
-RUN uv sync --frozen --no-install-project
+# Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project
 
 ENV PYTHONPATH=/app
 
-# Copy all files at once to avoid multiple network-dependent steps
-COPY . /app/
+COPY ./scripts /app/scripts
 
-# Use offline installation mode with the --no-index flag to avoid network
-# First try to use any existing packages in the local environment
-RUN python -m pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir --no-deps -e .
+COPY ./pyproject.toml ./uv.lock ./alembic.ini /app/
 
-# Copy application files
-# Already copied everything above
+COPY ./app /app/app
+
 # Sync the project
-RUN uv sync
+# Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync
 
-CMD ["python", "-m", "app.main"]
+CMD ["fastapi", "run", "--workers", "4", "app/main.py"]
