@@ -109,7 +109,7 @@ services:
       - SENTRY_DSN=${SENTRY_DSN}
 
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/utils/health-check/"]
+      test: ["CMD", "curl", "-f", "https://service.${DOMAIN?Variable not set}/api/v1/utils/health-check/"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -143,7 +143,7 @@ services:
     build:
       context: ./frontend
       args:
-        - VITE_API_URL=https://api.${DOMAIN?Variable not set}
+        - VITE_API_URL=https://service.${DOMAIN?Variable not set}
         - NODE_ENV=production
     labels:
       - traefik.enable=true
