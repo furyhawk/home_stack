@@ -4,6 +4,8 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app/
 
+# Set environment variables
+=======
 # Install uv
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
 COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /uvx /bin/
@@ -29,13 +31,18 @@ RUN uv sync --frozen --no-install-project
 
 ENV PYTHONPATH=/app
 
-COPY ./scripts /app/scripts
+# Copy all files at once to avoid multiple network-dependent steps
+COPY . /app/
 
-COPY ./alembic.ini /app/
+# Use offline installation mode with the --no-index flag to avoid network
+# First try to use any existing packages in the local environment
+RUN python -m pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir --no-deps -e .
 
-COPY ./app /app/app
-
+# Copy application files
+# Already copied everything above
+=======
 # Sync the project
 RUN uv sync
 
-CMD ["fastapi", "run", "--workers", "4", "app/main.py"]
+CMD ["python", "-m", "app.main"]

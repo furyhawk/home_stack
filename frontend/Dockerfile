@@ -1,17 +1,15 @@
 # Stage 0, "build-stage", based on Node.js, to build and compile the frontend
-FROM docker.io/node:20 AS build-stage
+FROM docker.io/node:24 AS build-stage
 
 WORKDIR /app
 
-COPY package*.json /app/
+# Copy everything at once to minimize separate RUN steps
+COPY . /app/
 
-RUN npm install
-
-COPY ./ /app/
+# Offline build - only one RUN command to minimize network operations
+RUN npm ci --offline || npm install --no-network && npm run build
 
 ARG VITE_API_URL=${VITE_API_URL}
-
-RUN npm run build
 
 
 # Stage 1, based on Nginx, to have only the compiled app, ready for production with Nginx

@@ -17,7 +17,7 @@ down:
 	@echo "Containers stopped. Use 'make up' to start them again."
 
 build:
-	podman-compose build --build-arg network=host
+	DOCKER_BUILDKIT=0 podman-compose build --no-cache
 	@echo "Containers built. Use 'make up' to start them."
 
 restart: down build up
