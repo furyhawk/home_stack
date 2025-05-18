@@ -44,10 +44,12 @@ function UsersTable() {
     placeholderData: (prevData) => prevData,
   })
 
-  const setPage = (page: number) =>
+  const setPage = (page: number) => {
     navigate({
-      search: (prev: { [key: string]: string }) => ({ ...prev, page }),
+      to: Route.fullPath,
+      search: { page: String(page) },
     })
+  }
 
   const users = data?.data.slice(0, PER_PAGE) ?? []
   const count = data?.count ?? 0
