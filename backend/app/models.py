@@ -345,19 +345,82 @@ class WBGTResponse(BaseModel):
 
 
 # Models for 24-hour weather forecast
-class ForecastItem(BaseModel):
-    date: str
-    updated_timestamp: datetime
-    timestamp: datetime
-    forecasts: List[Forecast]
+class ForecastPeriodGeneral(BaseModel):
+    start: datetime
+    end: datetime
+    text: str
     
     model_config = {
         "extra": "ignore"
     }
 
 
+class TemperatureRange(BaseModel):
+    low: int
+    high: int
+    unit: str
+    
+    model_config = {
+        "extra": "ignore"
+    }
+
+
+class HumidityRange(BaseModel):
+    low: int
+    high: int
+    unit: str
+    
+    model_config = {
+        "extra": "ignore"
+    }
+
+
+class ForecastInfo(BaseModel):
+    code: Optional[str] = None
+    text: str
+    
+    model_config = {
+        "extra": "ignore"
+    }
+
+
+class WindInfo(BaseModel):
+    speed: Dict[str, Any]
+    direction: str
+    
+    model_config = {
+        "extra": "ignore"
+    }
+
+
+class GeneralForecast(BaseModel):
+    valid_period: ForecastPeriodGeneral = Field(alias="validPeriod")
+    temperature: TemperatureRange
+    relative_humidity: HumidityRange = Field(alias="relativeHumidity")
+    forecast: ForecastInfo
+    wind: WindInfo
+    
+    model_config = {
+        "extra": "ignore",
+        "populate_by_name": True
+    }
+
+
+class ForecastItem(BaseModel):
+    date: str
+    updated_timestamp: datetime = Field(alias="updatedTimestamp")
+    timestamp: datetime
+    general: GeneralForecast
+    periods: Optional[List[Dict[str, Any]]] = None
+    
+    model_config = {
+        "extra": "ignore",
+        "populate_by_name": True
+    }
+
+
 class TwentyFourHourForecastData(BaseModel):
-    area_metadata: List[AreaMetadata]
+    area_metadata: Optional[List[AreaMetadata]] = Field(default_factory=list)
     records: List[ForecastItem]
     pagination_token: Optional[str] = Field(None, alias="paginationToken")
     
