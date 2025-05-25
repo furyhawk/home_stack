@@ -1,24 +1,25 @@
-/**
- * Error thrown by API requests
- */
-export class ApiError extends Error {
-  status: number;
-  statusText: string;
-  data: any;
-  isNoDataAvailable: boolean;
+import type { ApiRequestOptions } from "./ApiRequestOptions"
+import type { ApiResult } from "./ApiResult"
 
-  constructor(status: number, statusText: string, data?: any) {
-    super(`API Error: ${status} ${statusText}`);
-    this.status = status;
-    this.statusText = statusText;
-    this.data = data;
-    this.name = 'ApiError';
-    
-    // Check if this is a "no data available" error
-    this.isNoDataAvailable = 
-      status === 404 || 
-      (statusText && statusText.toLowerCase().includes('no data available')) ||
-      (data && typeof data === 'string' && data.toLowerCase().includes('no data available')) ||
-      (data && data.message && typeof data.message === 'string' && data.message.toLowerCase().includes('no data available'));
+export class ApiError extends Error {
+  public readonly url: string
+  public readonly status: number
+  public readonly statusText: string
+  public readonly body: unknown
+  public readonly request: ApiRequestOptions
+
+  constructor(
+    request: ApiRequestOptions,
+    response: ApiResult,
+    message: string,
+  ) {
+    super(message)
+
+    this.name = "ApiError"
+    this.url = response.url
+    this.status = response.status
+    this.statusText = response.statusText
+    this.body = response.body
+    this.request = request
   }
 }

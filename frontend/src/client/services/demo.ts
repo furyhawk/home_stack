@@ -3,31 +3,34 @@
  * It is not meant to be imported or used directly, but rather as a reference.
  */
 
-import { 
-  WeatherService, 
-  EnhancedWeatherService, 
+import {
+  WeatherService,
+  EnhancedWeatherService,
   WeatherHub,
   ForecastType,
-  WeatherDataType
-} from '@/client';
+  WeatherDataType,
+} from "@/client"
 
 // Example 1: Basic usage of WeatherService
 async function basicWeatherServiceExample() {
   try {
     // Get two-hour forecast
-    const twoHourForecast = await WeatherService.getTwoHourForecast();
-    console.log('Two-hour forecast:', twoHourForecast);
+    const twoHourForecast = await WeatherService.getTwoHourForecast()
+    console.log("Two-hour forecast:", twoHourForecast)
 
     // Get air temperature with a specific date
-    const date = '2025-05-25';
-    const airTemperature = await WeatherService.getAirTemperature(date);
-    console.log('Air temperature for', date, ':', airTemperature);
+    const date = "2025-05-25"
+    const airTemperature = await WeatherService.getAirTemperature(date)
+    console.log("Air temperature for", date, ":", airTemperature)
 
     // Get wind direction with pagination
-    const windDirection = await WeatherService.getWindDirection(undefined, 'some-pagination-token');
-    console.log('Wind direction with pagination:', windDirection);
+    const windDirection = await WeatherService.getWindDirection(
+      undefined,
+      "some-pagination-token",
+    )
+    console.log("Wind direction with pagination:", windDirection)
   } catch (error) {
-    console.error('Error in basic example:', error);
+    console.error("Error in basic example:", error)
   }
 }
 
@@ -35,26 +38,30 @@ async function basicWeatherServiceExample() {
 async function enhancedWeatherServiceExample() {
   try {
     // Get weather dashboard with multiple data types
-    const dashboard = await EnhancedWeatherService.getWeatherDashboard();
-    console.log('Weather dashboard:', dashboard);
+    const dashboard = await EnhancedWeatherService.getWeatherDashboard()
+    console.log("Weather dashboard:", dashboard)
 
     // Get forecast for a specific area
-    const areaForecast = await EnhancedWeatherService.getForecastByArea('Changi');
-    console.log('Changi forecast:', areaForecast);
+    const areaForecast =
+      await EnhancedWeatherService.getForecastByArea("Changi")
+    console.log("Changi forecast:", areaForecast)
 
     // Get extended forecast (24-hour and 4-day)
-    const extendedForecast = await EnhancedWeatherService.getExtendedForecast();
-    console.log('Extended forecast:', extendedForecast);
+    const extendedForecast = await EnhancedWeatherService.getExtendedForecast()
+    console.log("Extended forecast:", extendedForecast)
 
     // Format a date for display
-    const formattedDate = EnhancedWeatherService.formatDateTime('2025-05-25T14:30:00Z', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
-    console.log('Formatted date:', formattedDate);
+    const formattedDate = EnhancedWeatherService.formatDateTime(
+      "2025-05-25T14:30:00Z",
+      {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      },
+    )
+    console.log("Formatted date:", formattedDate)
   } catch (error) {
-    console.error('Error in enhanced example:', error);
+    console.error("Error in enhanced example:", error)
   }
 }
 
@@ -62,42 +69,47 @@ async function enhancedWeatherServiceExample() {
 async function weatherHubExample() {
   try {
     // Get forecast by type
-    const twoHourForecast = await WeatherHub.getForecast(ForecastType.TwoHour);
-    console.log('Two-hour forecast via Hub:', twoHourForecast);
+    const twoHourForecast = await WeatherHub.getForecast(ForecastType.TwoHour)
+    console.log("Two-hour forecast via Hub:", twoHourForecast)
 
     // Get weather data by type
-    const airTemperature = await WeatherHub.getWeatherData(WeatherDataType.AirTemperature);
-    console.log('Air temperature via Hub:', airTemperature);
+    const airTemperature = await WeatherHub.getWeatherData(
+      WeatherDataType.AirTemperature,
+    )
+    console.log("Air temperature via Hub:", airTemperature)
 
     // Get comprehensive dashboard
-    const dashboard = await WeatherHub.getWeatherDashboard();
-    console.log('Dashboard via Hub:', dashboard);
+    const dashboard = await WeatherHub.getWeatherDashboard()
+    console.log("Dashboard via Hub:", dashboard)
 
     // Using the formatting utilities
     if (twoHourForecast.success && twoHourForecast.data?.data?.items) {
-      const forecastItem = twoHourForecast.data.data.items[0];
-      const forecasts = forecastItem.forecasts;
-      const validPeriod = forecastItem.valid_period;
-      const areaMetadata = twoHourForecast.data.data.area_metadata || [];
+      const forecastItem = twoHourForecast.data.data.items[0]
+      const forecasts = forecastItem.forecasts
+      const validPeriod = forecastItem.valid_period
+      const areaMetadata = twoHourForecast.data.data.area_metadata || []
 
       // Merge location data
-      const forecastsWithLocation = WeatherHub.mergeLocationData(forecasts, areaMetadata);
-      console.log('Forecasts with location:', forecastsWithLocation);
+      const forecastsWithLocation = WeatherHub.mergeLocationData(
+        forecasts,
+        areaMetadata,
+      )
+      console.log("Forecasts with location:", forecastsWithLocation)
 
       // Filter by area
-      const filteredForecasts = WeatherHub.filterByArea(forecasts, 'Changi');
-      console.log('Filtered forecasts for Changi:', filteredForecasts);
+      const filteredForecasts = WeatherHub.filterByArea(forecasts, "Changi")
+      console.log("Filtered forecasts for Changi:", filteredForecasts)
 
       // Get unique areas
-      const areas = WeatherHub.getUniqueAreas(forecasts);
-      console.log('Unique areas:', areas);
+      const areas = WeatherHub.getUniqueAreas(forecasts)
+      console.log("Unique areas:", areas)
 
       // Format forecast period
-      const formattedPeriod = WeatherHub.formatForecastPeriod(validPeriod);
-      console.log('Formatted period:', formattedPeriod);
+      const formattedPeriod = WeatherHub.formatForecastPeriod(validPeriod)
+      console.log("Formatted period:", formattedPeriod)
     }
   } catch (error) {
-    console.error('Error in hub example:', error);
+    console.error("Error in hub example:", error)
   }
 }
 
@@ -119,7 +131,7 @@ async function weatherHubExample() {
  *
  *   if (isLoading) return <div>Loading...</div>;
  *   if (error) return <div>Error loading forecast</div>;
- *   
+ *
  *   return (
  *     <div>
  *       <h2>Two-Hour Forecast</h2>
@@ -156,30 +168,30 @@ async function weatherHubExample() {
  *   if (isLoading) return <div>Loading dashboard...</div>;
  *   if (error) return <div>Error loading dashboard</div>;
  *   if (!data?.success) return <div>Failed to load some weather data: {data?.error}</div>;
- *   
+ *
  *   // Process two-hour forecast data
  *   const twoHourForecast = data.twoHourForecast?.data?.items?.[0];
  *   const forecasts = twoHourForecast?.forecasts || [];
  *   const validPeriod = twoHourForecast?.valid_period;
  *   const areaMetadata = data.twoHourForecast?.data?.area_metadata || [];
- *   
+ *
  *   // Get forecasts with location data
  *   const forecastsWithLocation = WeatherHub.mergeLocationData(forecasts, areaMetadata);
- *   
+ *
  *   // Get temperature data
  *   const temperatures = data.airTemperature?.data?.readings || [];
- *   
+ *
  *   return (
  *     <div>
  *       <h2>Weather Dashboard</h2>
- *       
+ *
  *       {validPeriod && (
  *         <div>
  *           <h3>Forecast Period</h3>
  *           <p>{WeatherHub.formatForecastPeriod(validPeriod)}</p>
  *         </div>
  *       )}
- *       
+ *
  *       <div>
  *         <h3>Forecasts</h3>
  *         <ul>
@@ -191,7 +203,7 @@ async function weatherHubExample() {
  *           ))}
  *         </ul>
  *       </div>
- *       
+ *
  *       <div>
  *         <h3>Temperatures</h3>
  *         <ul>
@@ -202,7 +214,7 @@ async function weatherHubExample() {
  *           ))}
  *         </ul>
  *       </div>
- *       
+ *
  *       <button onClick={() => refetch()}>Refresh Dashboard</button>
  *     </div>
  *   );
