@@ -19,7 +19,7 @@ export type AreaMetadata = {
   label_location: LabelLocation
 }
 
-export type Body_login_login_access_token = {
+export type BodyLoginLoginAccessToken = {
   grant_type?: string | null
   username: string
   password: string
@@ -99,14 +99,14 @@ export type ItemPublic = {
   owner_id: string
 }
 
-export type ItemsPublic = {
-  data: Array<ItemPublic>
-  count: number
-}
-
 export type ItemUpdate = {
   title?: string | null
   description?: string | null
+}
+
+export type ItemsPublic = {
+  data: Array<ItemPublic>
+  count: number
 }
 
 export type LabelLocation = {
@@ -214,11 +214,6 @@ export type UserRegister = {
   full_name?: string | null
 }
 
-export type UsersPublic = {
-  data: Array<UserPublic>
-  count: number
-}
-
 export type UserUpdate = {
   email?: string | null
   is_active?: boolean
@@ -230,6 +225,11 @@ export type UserUpdate = {
 export type UserUpdateMe = {
   full_name?: string | null
   email?: string | null
+}
+
+export type UsersPublic = {
+  data: Array<UserPublic>
+  count: number
 }
 
 export type ValidationError = {
@@ -286,141 +286,654 @@ export type WindInfo = {
   direction: string
 }
 
-export type ItemsReadItemsData = {
-  limit?: number
-  skip?: number
+export type WindDirectionData = {
+  stations: Array<Station>
+  readings: Array<Reading>
+  readingType: string
+  readingUnit: string
+  paginationToken?: string | null
 }
 
-export type ItemsReadItemsResponse = ItemsPublic
-
-export type ItemsCreateItemData = {
-  requestBody: ItemCreate
+export type WindDirectionResponse = {
+  code: number
+  errorMsg?: string | null
+  data?: WindDirectionData | null
 }
 
-export type ItemsCreateItemResponse = ItemPublic
-
-export type ItemsReadItemData = {
-  id: string
+export type WindInfo = {
+  speed: {
+    [key: string]: unknown
+  }
+  direction: string
 }
-
-export type ItemsReadItemResponse = ItemPublic
-
-export type ItemsUpdateItemData = {
-  id: string
-  requestBody: ItemUpdate
-}
-
-export type ItemsUpdateItemResponse = ItemPublic
-
-export type ItemsDeleteItemData = {
-  id: string
-}
-
-export type ItemsDeleteItemResponse = Message
 
 export type LoginLoginAccessTokenData = {
-  formData: Body_login_login_access_token
+  body: BodyLoginLoginAccessToken
+  path?: never
+  query?: never
+  url: "/api/v1/login/access-token"
 }
 
-export type LoginLoginAccessTokenResponse = Token
+export type LoginLoginAccessTokenErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError
+}
 
-export type LoginTestTokenResponse = UserPublic
+export type LoginLoginAccessTokenError =
+  LoginLoginAccessTokenErrors[keyof LoginLoginAccessTokenErrors]
+
+export type LoginLoginAccessTokenResponses = {
+  /**
+   * Successful Response
+   */
+  200: Token
+}
+
+export type LoginLoginAccessTokenResponse =
+  LoginLoginAccessTokenResponses[keyof LoginLoginAccessTokenResponses]
+
+export type LoginTestTokenData = {
+  body?: never
+  path?: never
+  query?: never
+  url: "/api/v1/login/test-token"
+}
+
+export type LoginTestTokenResponses = {
+  /**
+   * Successful Response
+   */
+  200: UserPublic
+}
+
+export type LoginTestTokenResponse =
+  LoginTestTokenResponses[keyof LoginTestTokenResponses]
 
 export type LoginRecoverPasswordData = {
-  email: string
+  body?: never
+  path: {
+    email: string
+  }
+  query?: never
+  url: "/api/v1/password-recovery/{email}"
 }
 
-export type LoginRecoverPasswordResponse = Message
+export type LoginRecoverPasswordErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError
+}
+
+export type LoginRecoverPasswordError =
+  LoginRecoverPasswordErrors[keyof LoginRecoverPasswordErrors]
+
+export type LoginRecoverPasswordResponses = {
+  /**
+   * Successful Response
+   */
+  200: Message
+}
+
+export type LoginRecoverPasswordResponse =
+  LoginRecoverPasswordResponses[keyof LoginRecoverPasswordResponses]
 
 export type LoginResetPasswordData = {
-  requestBody: NewPassword
+  body: NewPassword
+  path?: never
+  query?: never
+  url: "/api/v1/reset-password/"
 }
 
-export type LoginResetPasswordResponse = Message
+export type LoginResetPasswordErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError
+}
+
+export type LoginResetPasswordError =
+  LoginResetPasswordErrors[keyof LoginResetPasswordErrors]
+
+export type LoginResetPasswordResponses = {
+  /**
+   * Successful Response
+   */
+  200: Message
+}
+
+export type LoginResetPasswordResponse =
+  LoginResetPasswordResponses[keyof LoginResetPasswordResponses]
 
 export type LoginRecoverPasswordHtmlContentData = {
-  email: string
+  body?: never
+  path: {
+    email: string
+  }
+  query?: never
+  url: "/api/v1/password-recovery-html-content/{email}"
 }
 
-export type LoginRecoverPasswordHtmlContentResponse = string
-
-export type PrivateCreateUserData = {
-  requestBody: PrivateUserCreate
+export type LoginRecoverPasswordHtmlContentErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError
 }
 
-export type PrivateCreateUserResponse = UserPublic
+export type LoginRecoverPasswordHtmlContentError =
+  LoginRecoverPasswordHtmlContentErrors[keyof LoginRecoverPasswordHtmlContentErrors]
+
+export type LoginRecoverPasswordHtmlContentResponses = {
+  /**
+   * Successful Response
+   */
+  200: string
+}
+
+export type LoginRecoverPasswordHtmlContentResponse =
+  LoginRecoverPasswordHtmlContentResponses[keyof LoginRecoverPasswordHtmlContentResponses]
 
 export type UsersReadUsersData = {
-  limit?: number
-  skip?: number
+  body?: never
+  path?: never
+  query?: {
+    skip?: number
+    limit?: number
+  }
+  url: "/api/v1/users/"
 }
 
-export type UsersReadUsersResponse = UsersPublic
+export type UsersReadUsersErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError
+}
+
+export type UsersReadUsersError =
+  UsersReadUsersErrors[keyof UsersReadUsersErrors]
+
+export type UsersReadUsersResponses = {
+  /**
+   * Successful Response
+   */
+  200: UsersPublic
+}
+
+export type UsersReadUsersResponse =
+  UsersReadUsersResponses[keyof UsersReadUsersResponses]
 
 export type UsersCreateUserData = {
-  requestBody: UserCreate
+  body: UserCreate
+  path?: never
+  query?: never
+  url: "/api/v1/users/"
 }
 
-export type UsersCreateUserResponse = UserPublic
+export type UsersCreateUserErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError
+}
 
-export type UsersReadUserMeResponse = UserPublic
+export type UsersCreateUserError =
+  UsersCreateUserErrors[keyof UsersCreateUserErrors]
 
-export type UsersDeleteUserMeResponse = Message
+export type UsersCreateUserResponses = {
+  /**
+   * Successful Response
+   */
+  200: UserPublic
+}
+
+export type UsersCreateUserResponse =
+  UsersCreateUserResponses[keyof UsersCreateUserResponses]
+
+export type UsersDeleteUserMeData = {
+  body?: never
+  path?: never
+  query?: never
+  url: "/api/v1/users/me"
+}
+
+export type UsersDeleteUserMeResponses = {
+  /**
+   * Successful Response
+   */
+  200: Message
+}
+
+export type UsersDeleteUserMeResponse =
+  UsersDeleteUserMeResponses[keyof UsersDeleteUserMeResponses]
+
+export type UsersReadUserMeData = {
+  body?: never
+  path?: never
+  query?: never
+  url: "/api/v1/users/me"
+}
+
+export type UsersReadUserMeResponses = {
+  /**
+   * Successful Response
+   */
+  200: UserPublic
+}
+
+export type UsersReadUserMeResponse =
+  UsersReadUserMeResponses[keyof UsersReadUserMeResponses]
 
 export type UsersUpdateUserMeData = {
-  requestBody: UserUpdateMe
+  body: UserUpdateMe
+  path?: never
+  query?: never
+  url: "/api/v1/users/me"
 }
 
-export type UsersUpdateUserMeResponse = UserPublic
+export type UsersUpdateUserMeErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError
+}
+
+export type UsersUpdateUserMeError =
+  UsersUpdateUserMeErrors[keyof UsersUpdateUserMeErrors]
+
+export type UsersUpdateUserMeResponses = {
+  /**
+   * Successful Response
+   */
+  200: UserPublic
+}
+
+export type UsersUpdateUserMeResponse =
+  UsersUpdateUserMeResponses[keyof UsersUpdateUserMeResponses]
 
 export type UsersUpdatePasswordMeData = {
-  requestBody: UpdatePassword
+  body: UpdatePassword
+  path?: never
+  query?: never
+  url: "/api/v1/users/me/password"
 }
 
-export type UsersUpdatePasswordMeResponse = Message
+export type UsersUpdatePasswordMeErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError
+}
+
+export type UsersUpdatePasswordMeError =
+  UsersUpdatePasswordMeErrors[keyof UsersUpdatePasswordMeErrors]
+
+export type UsersUpdatePasswordMeResponses = {
+  /**
+   * Successful Response
+   */
+  200: Message
+}
+
+export type UsersUpdatePasswordMeResponse =
+  UsersUpdatePasswordMeResponses[keyof UsersUpdatePasswordMeResponses]
 
 export type UsersRegisterUserData = {
-  requestBody: UserRegister
+  body: UserRegister
+  path?: never
+  query?: never
+  url: "/api/v1/users/signup"
 }
 
-export type UsersRegisterUserResponse = UserPublic
-
-export type UsersReadUserByIdData = {
-  userId: string
+export type UsersRegisterUserErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError
 }
 
-export type UsersReadUserByIdResponse = UserPublic
+export type UsersRegisterUserError =
+  UsersRegisterUserErrors[keyof UsersRegisterUserErrors]
 
-export type UsersUpdateUserData = {
-  requestBody: UserUpdate
-  userId: string
+export type UsersRegisterUserResponses = {
+  /**
+   * Successful Response
+   */
+  200: UserPublic
 }
 
-export type UsersUpdateUserResponse = UserPublic
+export type UsersRegisterUserResponse =
+  UsersRegisterUserResponses[keyof UsersRegisterUserResponses]
 
 export type UsersDeleteUserData = {
-  userId: string
+  body?: never
+  path: {
+    user_id: string
+  }
+  query?: never
+  url: "/api/v1/users/{user_id}"
 }
 
-export type UsersDeleteUserResponse = Message
+export type UsersDeleteUserErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError
+}
+
+export type UsersDeleteUserError =
+  UsersDeleteUserErrors[keyof UsersDeleteUserErrors]
+
+export type UsersDeleteUserResponses = {
+  /**
+   * Successful Response
+   */
+  200: Message
+}
+
+export type UsersDeleteUserResponse =
+  UsersDeleteUserResponses[keyof UsersDeleteUserResponses]
+
+export type UsersReadUserByIdData = {
+  body?: never
+  path: {
+    user_id: string
+  }
+  query?: never
+  url: "/api/v1/users/{user_id}"
+}
+
+export type UsersReadUserByIdErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError
+}
+
+export type UsersReadUserByIdError =
+  UsersReadUserByIdErrors[keyof UsersReadUserByIdErrors]
+
+export type UsersReadUserByIdResponses = {
+  /**
+   * Successful Response
+   */
+  200: UserPublic
+}
+
+export type UsersReadUserByIdResponse =
+  UsersReadUserByIdResponses[keyof UsersReadUserByIdResponses]
+
+export type UsersUpdateUserData = {
+  body: UserUpdate
+  path: {
+    user_id: string
+  }
+  query?: never
+  url: "/api/v1/users/{user_id}"
+}
+
+export type UsersUpdateUserErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError
+}
+
+export type UsersUpdateUserError =
+  UsersUpdateUserErrors[keyof UsersUpdateUserErrors]
+
+export type UsersUpdateUserResponses = {
+  /**
+   * Successful Response
+   */
+  200: UserPublic
+}
+
+export type UsersUpdateUserResponse =
+  UsersUpdateUserResponses[keyof UsersUpdateUserResponses]
 
 export type UtilsTestEmailData = {
-  emailTo: string
+  body?: never
+  path?: never
+  query: {
+    email_to: string
+  }
+  url: "/api/v1/utils/test-email/"
 }
 
-export type UtilsTestEmailResponse = Message
+export type UtilsTestEmailErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError
+}
 
-export type UtilsHealthCheckResponse = boolean
+export type UtilsTestEmailError =
+  UtilsTestEmailErrors[keyof UtilsTestEmailErrors]
+
+export type UtilsTestEmailResponses = {
+  /**
+   * Successful Response
+   */
+  201: Message
+}
+
+export type UtilsTestEmailResponse =
+  UtilsTestEmailResponses[keyof UtilsTestEmailResponses]
+
+export type UtilsHealthCheckData = {
+  body?: never
+  path?: never
+  query?: never
+  url: "/api/v1/utils/health-check/"
+}
+
+export type UtilsHealthCheckResponses = {
+  /**
+   * Successful Response
+   */
+  200: boolean
+}
+
+export type UtilsHealthCheckResponse =
+  UtilsHealthCheckResponses[keyof UtilsHealthCheckResponses]
+
+export type ItemsReadItemsData = {
+  body?: never
+  path?: never
+  query?: {
+    skip?: number
+    limit?: number
+  }
+  url: "/api/v1/items/"
+}
+
+export type ItemsReadItemsErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError
+}
+
+export type ItemsReadItemsError =
+  ItemsReadItemsErrors[keyof ItemsReadItemsErrors]
+
+export type ItemsReadItemsResponses = {
+  /**
+   * Successful Response
+   */
+  200: ItemsPublic
+}
+
+export type ItemsReadItemsResponse =
+  ItemsReadItemsResponses[keyof ItemsReadItemsResponses]
+
+export type ItemsCreateItemData = {
+  body: ItemCreate
+  path?: never
+  query?: never
+  url: "/api/v1/items/"
+}
+
+export type ItemsCreateItemErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError
+}
+
+export type ItemsCreateItemError =
+  ItemsCreateItemErrors[keyof ItemsCreateItemErrors]
+
+export type ItemsCreateItemResponses = {
+  /**
+   * Successful Response
+   */
+  200: ItemPublic
+}
+
+export type ItemsCreateItemResponse =
+  ItemsCreateItemResponses[keyof ItemsCreateItemResponses]
+
+export type ItemsDeleteItemData = {
+  body?: never
+  path: {
+    id: string
+  }
+  query?: never
+  url: "/api/v1/items/{id}"
+}
+
+export type ItemsDeleteItemErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError
+}
+
+export type ItemsDeleteItemError =
+  ItemsDeleteItemErrors[keyof ItemsDeleteItemErrors]
+
+export type ItemsDeleteItemResponses = {
+  /**
+   * Successful Response
+   */
+  200: Message
+}
+
+export type ItemsDeleteItemResponse =
+  ItemsDeleteItemResponses[keyof ItemsDeleteItemResponses]
+
+export type ItemsReadItemData = {
+  body?: never
+  path: {
+    id: string
+  }
+  query?: never
+  url: "/api/v1/items/{id}"
+}
+
+export type ItemsReadItemErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError
+}
+
+export type ItemsReadItemError = ItemsReadItemErrors[keyof ItemsReadItemErrors]
+
+export type ItemsReadItemResponses = {
+  /**
+   * Successful Response
+   */
+  200: ItemPublic
+}
+
+export type ItemsReadItemResponse =
+  ItemsReadItemResponses[keyof ItemsReadItemResponses]
+
+export type ItemsUpdateItemData = {
+  body: ItemUpdate
+  path: {
+    id: string
+  }
+  query?: never
+  url: "/api/v1/items/{id}"
+}
+
+export type ItemsUpdateItemErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError
+}
+
+export type ItemsUpdateItemError =
+  ItemsUpdateItemErrors[keyof ItemsUpdateItemErrors]
+
+export type ItemsUpdateItemResponses = {
+  /**
+   * Successful Response
+   */
+  200: ItemPublic
+}
+
+export type ItemsUpdateItemResponse =
+  ItemsUpdateItemResponses[keyof ItemsUpdateItemResponses]
 
 export type WeatherGetTwoHourForecastData = {
+  body?: never
+  path?: never
+  query?: {
+    /**
+     * SGT date for which to retrieve data (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)
+     */
+    date?: string | null
+    /**
+     * Pagination token for retrieving subsequent data pages
+     */
+    pagination_token?: string | null
+  }
+  url: "/api/v1/weather/two-hour-forecast"
+}
+
+export type WeatherGetTwoHourForecastErrors = {
   /**
-   * SGT date for which to retrieve data (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)
+   * Validation Error
    */
-  date?: string | null
+  422: HttpValidationError
+}
+
+export type WeatherGetTwoHourForecastError =
+  WeatherGetTwoHourForecastErrors[keyof WeatherGetTwoHourForecastErrors]
+
+export type WeatherGetTwoHourForecastResponses = {
   /**
-   * Pagination token for retrieving subsequent data pages
+   * Successful Response
    */
-  paginationToken?: string | null
+  200: WeatherResponse
+}
+
+export type WeatherGetTwoHourForecastResponse =
+  WeatherGetTwoHourForecastResponses[keyof WeatherGetTwoHourForecastResponses]
+
+export type WeatherGetAirTemperatureData = {
+  body?: never
+  path?: never
+  query?: {
+    /**
+     * Format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS (SGT). Example: 2024-07-16 or 2024-07-16T23:59:00
+     */
+    date?: string | null
+    /**
+     * Pagination token for retrieving subsequent data pages
+     */
+    pagination_token?: string | null
+  }
+  url: "/api/v1/weather/air-temperature"
 }
 
 export type WeatherGetTwoHourForecastResponse = WeatherResponse
