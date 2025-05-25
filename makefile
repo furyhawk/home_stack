@@ -7,7 +7,7 @@ DB_VOLUME=home_app-db-data
 BACKUP_DIR=./backups
 
 # Targets
-.PHONY: up down restart logs build
+.PHONY: up down restart logs build reset
 
 up:
 	podman compose up -d
@@ -21,6 +21,14 @@ build:
 	@echo "Containers built. Use 'make up' to start them."
 
 restart: down build up
+
+reset:
+	podman compose down -v
+	podman system prune -f
+	podman volume prune -f
+	podman network prune -f
+	podman pod prune -f
+	@echo "Environment completely reset. Use 'make build' then 'make up' to recreate."
 
 backup:
 	@mkdir -p $(BACKUP_DIR)
@@ -68,9 +76,25 @@ help:
 	@echo "  make logs       View the logs of the containers"
 	@echo "  make build      Build the containers"
 	@echo "  make restart    Restart the containers"
+	@echo "  make reset      Completely reset Podman (containers, volumes, networks)"
 	@echo "  make backup     Create a backup of the database volume"
 	@echo "  make restore    Restore the database volume from a backup"
 	@echo "  make clean      Remove all containers and volumes"
 	@echo "  make prune      Remove all stopped containers and unused volumes"
+	@echo "  make info       Display detailed information about Podman state"
 	@echo "  make help       View this help message"
 	@echo ""
+
+info:
+	@echo "===== Podman System Info ====="
+	podman info
+	@echo "\n===== Podman Networks ====="
+	podman network ls
+	@echo "\n===== Podman Volumes ====="
+	podman volume ls
+	@echo "\n===== Podman Containers ====="
+	podman ps -a
+	@echo "\n===== Podman Images ====="
+	podman images
+	@echo "\n===== Podman Compose Config ====="
+	podman compose config
