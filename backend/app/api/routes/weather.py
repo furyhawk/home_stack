@@ -81,6 +81,39 @@ async def make_api_request(
                             # If it still fails, fall back to the original error
                             pass
                 
+                # Handle field name mismatches for air temperature data
+                if 'device_id' in str(e) and 'Station' in str(e):
+                    # API returns deviceId, but model expects device_id
+                    if 'data' in data and 'stations' in data['data']:
+                        for station in data['data']['stations']:
+                            if 'deviceId' in station and 'device_id' not in station:
+                                station['device_id'] = station['deviceId']
+                    
+                    # Try parsing again with the fixed data
+                    try:
+                        if response_model:
+                            return response_model(**data)
+                        return data
+                    except ValidationError as new_e:
+                        # If there are other issues, continue with fixes
+                        print(f"Still having validation issues after device_id fix: {str(new_e)}")
+                
+                # Handle readings issues (station_id -> id)
+                if 'station_id' in str(e) or 'value' in str(e) and 'Reading' in str(e):
+                    if 'data' in data and 'readings' in data['data']:
+                        for reading in data['data']['readings']:
+                            if 'id' in reading and 'station_id' not in reading:
+                                reading['station_id'] = reading['id']
+                    
+                    # Try parsing again with the fixed data
+                    try:
+                        if response_model:
+                            return response_model(**data)
+                        return data
+                    except ValidationError as new_e:
+                        # If it still fails, fall back to the original error
+                        print(f"Still having validation issues after station_id fix: {str(new_e)}")
+                
                 # If we couldn't fix it, raise the original error
                 raise HTTPException(
                     status_code=500,
