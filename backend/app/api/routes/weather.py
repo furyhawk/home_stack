@@ -73,11 +73,16 @@ async def make_api_request(
                                 if 'update_timestamp' in item and 'updated_timestamp' not in item:
                                     item['updated_timestamp'] = item['update_timestamp']
                         
-                        # For four-day forecast records structure
+                        # For forecast records structure (both 24-hour and 4-day)
                         if 'records' in data['data']:
                             for record in data['data']['records']:
+                                # Handle updatedTimestamp field
                                 if 'updatedTimestamp' in record and 'updated_timestamp' not in record:
                                     record['updated_timestamp'] = record['updatedTimestamp']
+                                
+                                # Handle possible "tiemstamp" typo in API that should be "timestamp"
+                                if 'tiemstamp' in record and 'timestamp' not in record:
+                                    record['timestamp'] = record['tiemstamp']
                         
                         # Try parsing again with the fixed data
                         try:
@@ -104,6 +109,23 @@ async def make_api_request(
                     except ValidationError as new_e:
                         # If there are other issues, continue with fixes
                         print(f"Still having validation issues after device_id fix: {str(new_e)}")
+                
+                # Handle 24-hour forecast structure issues
+                if 'TwentyFourHourForecast' in str(e):
+                    # Handle missing area_metadata or other structural issues
+                    if 'data' in data:
+                        # If area_metadata is missing but required, provide an empty list
+                        if 'area_metadata' not in data['data'] and 'records' in data['data']:
+                            data['data']['area_metadata'] = []
+                        
+                        # Try parsing again with the fixed data
+                        try:
+                            if response_model:
+                                return response_model(**data)
+                            return data
+                        except ValidationError as new_e:
+                            # If it still fails, continue with other fixes
+                            print(f"Still having validation issues after 24-hour forecast fix: {str(new_e)}")
                 
                 # Handle readings issues (station_id -> id)
                 if 'station_id' in str(e) or 'value' in str(e) and 'Reading' in str(e):
