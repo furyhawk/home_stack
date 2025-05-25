@@ -61,23 +61,26 @@ function WeatherDashboard() {
     queryFn: () => WeatherHub.getWeatherDashboard(),
     refetchInterval: 1000 * 60 * 30, // Refetch every 30 minutes
     staleTime: 1000 * 60 * 15, // Consider data stale after 15 minutes
-  })
-
-  // Get 24-hour forecast
-  const {
-    data: extendedForecastData,
-    isLoading: isExtendedLoading,
-    error: extendedError,
-    refetch: refetchExtended
-  } = useQuery({
-    queryKey: ["weather", "extended-forecast"],
-    queryFn: async () => {
-      const result = await WeatherHub.getForecast(ForecastType.TwentyFourHour);
-      if (!result.success) {
-        throw new Error(result.error || "Failed to fetch extended forecast data");
-      }
-      return result.data;
-    },
+  })    // Get 24-hour forecast
+    const {
+      data: extendedForecastData,
+      isLoading: isExtendedLoading,
+      error: extendedError,
+      refetch: refetchExtended
+    } = useQuery({
+      queryKey: ["weather", "extended-forecast"],
+      queryFn: async () => {
+        const result = await WeatherHub.getForecast(ForecastType.TwentyFourHour);
+        if (!result.success) {
+          // Create an error object with isNoDataAvailable flag if needed
+          const error = new Error(result.error || "Failed to fetch extended forecast data");
+          if (result.isNoDataAvailable) {
+            Object.assign(error, { isNoDataAvailable: true });
+          }
+          throw error;
+        }
+        return result.data;
+      },
     refetchInterval: 1000 * 60 * 60, // Refetch every hour
     staleTime: 1000 * 60 * 30, // Consider data stale after 30 minutes
   })
@@ -127,9 +130,7 @@ function WeatherDashboard() {
           Singapore Weather Dashboard
         </Heading>
         <Box bg="whiteAlpha.200" p={6} borderRadius="md" shadow="md">
-          <WeatherErrorDisplay retry={handleRefresh} />
-          {dashboardError && <Text color="red.500" mt={2}>Dashboard error: {String(dashboardError)}</Text>}
-          {extendedError && <Text color="red.500" mt={2}>Extended forecast error: {String(extendedError)}</Text>}
+          <WeatherErrorDisplay retry={handleRefresh} error={dashboardError || extendedError} />
         </Box>
       </Container>
     )
@@ -441,9 +442,17 @@ function WeatherDashboard() {
           </>
         ) : (
           <Box textAlign="center" py={10}>
-            <Text>No weather dashboard data available at this time.</Text>
-            <Button mt={4} onClick={handleRefresh}>
-              Try Again
+            <Text fontSize="lg" fontWeight="bold">
+              No weather dashboard data available at this time.
+            </Text>
+            <Text color="gray.500" mb={4}>
+              The weather service is not providing data at this moment.
+            </Text>
+            <Button onClick={handleRefresh}>
+              <Flex alignItems="center" gap={2}>
+                <FiRefreshCw />
+                <Text>Try Again</Text>
+              </Flex>
             </Button>
           </Box>
         )}

@@ -48,6 +48,7 @@ export interface WeatherResult<T> {
   data: T | null;
   success: boolean;
   error?: string;
+  isNoDataAvailable?: boolean;
   timestamp: string;
 }
 
@@ -84,6 +85,23 @@ export class WeatherHub {
           break;
       }
       
+      // Check if there is actually data in the response
+      const hasData = (
+        data && 
+        ((data.data?.items && data.data.items.length > 0) || 
+         (data.data?.records && data.data.records.length > 0))
+      );
+      
+      if (!hasData) {
+        return {
+          data,
+          success: false,
+          error: 'No weather forecast data available at this time.',
+          isNoDataAvailable: true,
+          timestamp: new Date().toISOString()
+        };
+      }
+      
       return {
         data,
         success: true,
@@ -91,10 +109,20 @@ export class WeatherHub {
       };
     } catch (error) {
       console.error(`Error fetching ${type} forecast:`, error);
+      
+      // Check if this is a "no data available" error
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const isNoDataAvailable = 
+        (error instanceof Error && error.message.toLowerCase().includes('no data available')) ||
+        (error instanceof Error && error.name === 'ApiError' && 
+         typeof error === 'object' && error !== null && 
+         'isNoDataAvailable' in error && Boolean(error.isNoDataAvailable));
+      
       return {
         data: null,
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMessage,
+        isNoDataAvailable,
         timestamp: new Date().toISOString()
       };
     }
@@ -131,6 +159,23 @@ export class WeatherHub {
           break;
       }
       
+      // Check if there is actually data in the response
+      const hasData = (
+        data && 
+        ((data.data?.readings && data.data.readings.length > 0) || 
+         (data.data?.items && data.data.items.length > 0))
+      );
+      
+      if (!hasData) {
+        return {
+          data,
+          success: false,
+          error: 'No weather data available at this time.',
+          isNoDataAvailable: true,
+          timestamp: new Date().toISOString()
+        };
+      }
+      
       return {
         data,
         success: true,
@@ -138,10 +183,20 @@ export class WeatherHub {
       };
     } catch (error) {
       console.error(`Error fetching ${type} data:`, error);
+      
+      // Check if this is a "no data available" error
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const isNoDataAvailable = 
+        (error instanceof Error && error.message.toLowerCase().includes('no data available')) ||
+        (error instanceof Error && error.name === 'ApiError' && 
+         typeof error === 'object' && error !== null && 
+         'isNoDataAvailable' in error && Boolean(error.isNoDataAvailable));
+      
       return {
         data: null,
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMessage,
+        isNoDataAvailable,
         timestamp: new Date().toISOString()
       };
     }

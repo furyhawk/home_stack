@@ -1,21 +1,35 @@
 import { Box, Button, Flex, Icon, Text, VStack } from "@chakra-ui/react"
 import React from "react"
-import { FiAlertTriangle, FiRefreshCw } from "react-icons/fi"
+import { FiAlertTriangle, FiRefreshCw, FiCloud } from "react-icons/fi"
+
+import { ApiError } from "@/client/core/ApiError"
 
 interface WeatherErrorDisplayProps {
-  retry: () => void
+  retry: () => void;
+  error?: Error | ApiError | unknown;
 }
 
-const WeatherErrorDisplay: React.FC<WeatherErrorDisplayProps> = ({ retry }) => {
+const WeatherErrorDisplay: React.FC<WeatherErrorDisplayProps> = ({ retry, error }) => {
+  // Check if it's a no data available error
+  const isNoDataAvailable = error instanceof ApiError && error.isNoDataAvailable;
+
   return (
     <Box textAlign="center" py={10}>
       <VStack gap={4}>
-        <Icon as={FiAlertTriangle} boxSize={10} color="red.500" />
+        <Icon 
+          as={isNoDataAvailable ? FiCloud : FiAlertTriangle} 
+          boxSize={10} 
+          color={isNoDataAvailable ? "blue.500" : "red.500"} 
+        />
         <Text fontSize="lg" fontWeight="bold">
-          Unable to load weather data
+          {isNoDataAvailable 
+            ? "No weather forecast data available" 
+            : "Unable to load weather data"}
         </Text>
         <Text color="gray.500">
-          There was a problem fetching the weather forecast.
+          {isNoDataAvailable 
+            ? "The weather service is not providing data at this time." 
+            : "There was a problem fetching the weather forecast."}
         </Text>
         <Button onClick={retry}>
           <Flex gap={2} alignItems="center">
