@@ -381,20 +381,23 @@ class TwentyFourHourForecastResponse(BaseModel):
 # Models for 4-day weather forecast
 class FourDayForecastItem(BaseModel):
     date: str
-    updated_timestamp: datetime
+    updated_timestamp: datetime = Field(alias="updatedTimestamp")
     timestamp: datetime
     forecasts: List[Dict[str, Any]]  # Flexible structure for the forecasts
     
     model_config = {
-        "extra": "ignore"
+        "extra": "ignore",
+        "populate_by_name": True  # Allow both snake_case and camelCase
     }
 
 
 class FourDayForecastData(BaseModel):
     records: List[FourDayForecastItem]
+    pagination_token: Optional[str] = Field(None, alias="paginationToken")
     
     model_config = {
-        "extra": "ignore"
+        "extra": "ignore",
+        "populate_by_name": True  # Allow both snake_case and camelCase
     }
 
 
@@ -405,5 +408,5 @@ class FourDayForecastResponse(BaseModel):
     
     model_config = {
         "extra": "ignore",
-        "populate_by_name": True
+        "populate_by_name": True  # Allow both snake_case and camelCase
     }

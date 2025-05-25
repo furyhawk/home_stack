@@ -64,13 +64,20 @@ async def make_api_request(
                 print(f"Validation error parsing weather data: {str(e)}")
                 
                 # If the error is specifically about timestamp fields, try to fix
-                if 'update_timestamp' in str(e) or 'updated_timestamp' in str(e):
+                if 'update_timestamp' in str(e) or 'updated_timestamp' in str(e) or 'updatedTimestamp' in str(e):
                     # Try to manually fix the data structure
                     if 'data' in data:
+                        # For standard items structure
                         if 'items' in data['data']:
                             for item in data['data']['items']:
                                 if 'update_timestamp' in item and 'updated_timestamp' not in item:
                                     item['updated_timestamp'] = item['update_timestamp']
+                        
+                        # For four-day forecast records structure
+                        if 'records' in data['data']:
+                            for record in data['data']['records']:
+                                if 'updatedTimestamp' in record and 'updated_timestamp' not in record:
+                                    record['updated_timestamp'] = record['updatedTimestamp']
                         
                         # Try parsing again with the fixed data
                         try:
