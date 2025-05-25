@@ -10,7 +10,18 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  plugins: [react(), TanStackRouterVite()],
+  plugins: [react()],
+  build: {
+    // Improves build performance and error handling
+    chunkSizeWarningLimit: 1000,
+    sourcemap: false,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+      },
+    },
+  },
   server: {
     allowedHosts: [
       "dev.lan",

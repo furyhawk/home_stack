@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
+    "@hey-api/client-axios": "^0.7.1",
     "@hey-api/openapi-ts": "^0.67.5",
     "@playwright/test": "^1.52.0",
     "@tanstack/router-devtools": "1.120.6",
