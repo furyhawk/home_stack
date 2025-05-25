@@ -172,7 +172,7 @@ class WeatherData(BaseModel):
 class WeatherResponse(BaseModel):
     code: int
     error_msg: Optional[str] = Field(None, alias="errorMsg")
-    data: Optional[WeatherData] = None
+    data: Optional[Dict[str, Any]] = None
     
     class Config:
         extra = "ignore"  # Ignore extra fields in API response
@@ -187,3 +187,194 @@ class WeatherApiError(BaseModel):
     
     class Config:
         extra = "ignore"  # Ignore extra fields in API response
+
+
+# Models for air temperature readings
+class Station(BaseModel):
+    id: str
+    device_id: str
+    name: str
+    location: Dict[str, float]  # Contains latitude and longitude
+    
+    class Config:
+        extra = "ignore"
+
+
+class Reading(BaseModel):
+    station_id: str
+    value: float
+    timestamp: datetime
+    
+    class Config:
+        extra = "ignore"
+
+
+class AirTemperatureData(BaseModel):
+    stations: List[Station]
+    readings: List[Reading]
+    reading_type: str = Field(alias="readingType")
+    reading_unit: str = Field(alias="readingUnit")
+    pagination_token: Optional[str] = Field(None, alias="paginationToken")
+    
+    class Config:
+        extra = "ignore"
+        populate_by_name = True
+
+
+class AirTemperatureResponse(BaseModel):
+    code: int
+    error_msg: Optional[str] = Field(None, alias="errorMsg")
+    data: Optional[AirTemperatureData] = None
+    
+    class Config:
+        extra = "ignore"
+        populate_by_name = True
+
+
+# Models for wind direction readings
+class WindDirectionData(BaseModel):
+    stations: List[Station]
+    readings: List[Reading]
+    reading_type: str = Field(alias="readingType")
+    reading_unit: str = Field(alias="readingUnit")
+    pagination_token: Optional[str] = Field(None, alias="paginationToken")
+    
+    class Config:
+        extra = "ignore"
+        populate_by_name = True
+
+
+class WindDirectionResponse(BaseModel):
+    code: int
+    error_msg: Optional[str] = Field(None, alias="errorMsg")
+    data: Optional[WindDirectionData] = None
+    
+    class Config:
+        extra = "ignore"
+        populate_by_name = True
+
+
+# Models for lightning observation
+class LightningItem(BaseModel):
+    # Generic item model for lightning data
+    # The actual structure can be expanded based on the real API response
+    pass
+    
+    class Config:
+        extra = "ignore"
+
+
+class LightningRecord(BaseModel):
+    datetime: str
+    item: Dict[str, Any]  # Flexible structure to accommodate different data formats
+    updated_timestamp: Optional[datetime] = Field(None)
+    
+    class Config:
+        extra = "ignore"
+
+
+class LightningData(BaseModel):
+    records: List[LightningRecord]
+    pagination_token: Optional[str] = Field(None, alias="paginationToken")
+    
+    class Config:
+        extra = "ignore"
+        populate_by_name = True
+
+
+class LightningResponse(BaseModel):
+    code: int
+    error_msg: Optional[str] = Field(None, alias="errorMsg")
+    data: Optional[LightningData] = None
+    
+    class Config:
+        extra = "ignore"
+        populate_by_name = True
+
+
+# Models for WBGT (Wet Bulb Globe Temperature) observations
+class WBGTRecord(BaseModel):
+    datetime: str
+    item: Dict[str, Any]  # Flexible structure to accommodate different data formats
+    updated_timestamp: Optional[datetime] = Field(None)
+    
+    class Config:
+        extra = "ignore"
+
+
+class WBGTData(BaseModel):
+    records: List[WBGTRecord]
+    pagination_token: Optional[str] = Field(None, alias="paginationToken")
+    
+    class Config:
+        extra = "ignore"
+        populate_by_name = True
+
+
+class WBGTResponse(BaseModel):
+    code: int
+    error_msg: Optional[str] = Field(None, alias="errorMsg")
+    data: Optional[WBGTData] = None
+    
+    class Config:
+        extra = "ignore"
+        populate_by_name = True
+
+
+# Models for 24-hour weather forecast
+class ForecastItem(BaseModel):
+    date: str
+    updated_timestamp: datetime
+    timestamp: datetime
+    forecasts: List[Forecast]
+    
+    class Config:
+        extra = "ignore"
+
+
+class TwentyFourHourForecastData(BaseModel):
+    area_metadata: List[AreaMetadata]
+    records: List[ForecastItem]
+    pagination_token: Optional[str] = Field(None, alias="paginationToken")
+    
+    class Config:
+        extra = "ignore"
+        populate_by_name = True
+
+
+class TwentyFourHourForecastResponse(BaseModel):
+    code: int
+    error_msg: Optional[str] = Field(None, alias="errorMsg")
+    data: Optional[TwentyFourHourForecastData] = None
+    
+    class Config:
+        extra = "ignore"
+        populate_by_name = True
+
+
+# Models for 4-day weather forecast
+class FourDayForecastItem(BaseModel):
+    date: str
+    updated_timestamp: datetime
+    timestamp: datetime
+    forecasts: List[Dict[str, Any]]  # Flexible structure for the forecasts
+    
+    class Config:
+        extra = "ignore"
+
+
+class FourDayForecastData(BaseModel):
+    records: List[FourDayForecastItem]
+    
+    class Config:
+        extra = "ignore"
+
+
+class FourDayForecastResponse(BaseModel):
+    code: int
+    error_msg: Optional[str] = Field(None, alias="errorMsg")
+    data: Optional[FourDayForecastData] = None
+    
+    class Config:
+        extra = "ignore"
+        populate_by_name = True
