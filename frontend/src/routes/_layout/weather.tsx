@@ -18,6 +18,8 @@ import WeatherErrorDisplay from "@/components/Weather/WeatherErrorDisplay"
 import WeatherLoadingAnimation from "@/components/Weather/WeatherLoadingAnimation"
 import WeatherForecast from "@/components/Weather/WeatherForecast"
 import useCustomToast from "@/hooks/useCustomToast"
+import type { TwoHourForecastData, Forecast } from "@/utils/weatherTypes"
+import { assertTwoHourForecastResponse } from "@/utils/weatherTypes"
 
 export const Route = createFileRoute("/_layout/weather")({
   component: Weather,
@@ -28,7 +30,7 @@ function Weather() {
   const [selectedArea, setSelectedArea] = useState<string>("All Areas")
 
   const { 
-    data, 
+    data: rawData, 
     isLoading, 
     error, 
     refetch,
@@ -39,6 +41,9 @@ function Weather() {
     refetchInterval: 1000 * 60 * 30, // Refetch every 30 minutes
     staleTime: 1000 * 60 * 15, // Consider data stale after 15 minutes
   })
+
+  // Extract properly typed data from the generic response
+  const data: TwoHourForecastData | null = rawData ? assertTwoHourForecastResponse(rawData) : null
 
   // Format date for display
   const formatUpdateTime = (timestamp: string) => {
@@ -71,25 +76,25 @@ function Weather() {
 
   // Filter forecasts by area if selected
   const getFilteredForecasts = () => {
-    if (!data?.data?.items || data.data.items.length === 0) {
+    if (!data?.items || data.items.length === 0) {
       return []
     }
 
-    const forecasts = data.data.items[0].forecasts
+    const forecasts = data.items[0].forecasts
     if (selectedArea === "All Areas") {
       return forecasts
     }
     
-    return forecasts.filter(forecast => forecast.area === selectedArea)
+    return forecasts.filter((forecast: Forecast) => forecast.area === selectedArea)
   }
 
   // Get unique areas for the dropdown
   const getUniqueAreas = () => {
-    if (!data?.data?.items || data.data.items.length === 0) {
+    if (!data?.items || data.items.length === 0) {
       return []
     }
     
-    const areas = data.data.items[0].forecasts.map(f => f.area)
+    const areas = data.items[0].forecasts.map((f: Forecast) => f.area)
     return ["All Areas", ...areas].sort()
   }
 
@@ -115,7 +120,7 @@ function Weather() {
       <Box bg="whiteAlpha.200" p={6} borderRadius="md" shadow="md">
         {isLoading ? (
           <WeatherLoadingAnimation />
-        ) : data?.data?.items && data.data.items.length > 0 ? (
+        ) : data?.items && data.items.length > 0 ? (
           <>
             <Flex 
               direction={{ base: "column", md: "row" }} 
@@ -127,7 +132,7 @@ function Weather() {
               <Box>
                 <Text fontSize="sm" color="gray.500">
                   Last Updated:{" "}
-                  {formatUpdateTime(data.data.items[0].update_timestamp)}
+                  {formatUpdateTime(data.items[0].update_timestamp)}
                 </Text>
                 <Text fontSize="xs" color="gray.500">
                   Data fetched at: {formatLastFetchedTime(dataUpdatedAt)}
@@ -163,9 +168,16 @@ function Weather() {
             </Flex>
 
             <WeatherForecast 
-              forecasts={getFilteredForecasts()} 
-              validPeriod={data.data.items[0].valid_period}
-              areaMetadata={data.data.area_metadata || []}
+              forecasts={getFilteredForecasts().map((forecast: Forecast) => ({
+                code: forecast.area,
+                text: forecast.forecast
+              }))} 
+              validPeriod={{
+                start: data.items[0].valid_period.start,
+                end: data.items[0].valid_period.end,
+                text: data.items[0].valid_period.text
+              }}
+              areaMetadata={data.area_metadata || []}
             />
 
             <Text mt={6} fontSize="xs" color="gray.500">
