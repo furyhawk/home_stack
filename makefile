@@ -12,9 +12,13 @@ include $(ENV_FILE)
 export
 
 # Targets
-.PHONY: up down restart logs build reset
+.PHONY: up down restart logs build reset network
 
-up:
+network:
+	@podman network exists traefik-public || podman network create traefik-public
+	@echo "Traefik network ready."
+
+up: network
 	podman compose --env-file $(ENV_FILE) up -d
 
 down:
@@ -76,6 +80,7 @@ help:
 	@echo "Makefile for managing Podman Compose"
 	@echo ""
 	@echo "Usage:"
+	@echo "  make network    Create the traefik-public network if it doesn't exist"
 	@echo "  make up         Start the containers in detached mode"
 	@echo "  make down       Stop the containers"
 	@echo "  make logs       View the logs of the containers"
