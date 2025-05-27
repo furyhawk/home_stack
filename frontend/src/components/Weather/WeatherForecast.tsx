@@ -21,7 +21,7 @@ import {
   FiList,
 } from "react-icons/fi"
 
-import { AreaMetadata, Forecast, ForecastPeriod } from "@/client/types.gen"
+import { AreaMetadata, ForecastInfo, ForecastPeriodGeneral } from "@/client/types.gen"
 import WeatherMap from "./WeatherMap"
 
 // Map forecast descriptions to icons
@@ -48,30 +48,30 @@ const forecastIcons: Record<string, React.ElementType> = {
 }
 
 interface ForecastCardProps {
-  forecast: Forecast
+  forecast: ForecastInfo
 }
 
 const ForecastCard: React.FC<ForecastCardProps> = ({ forecast }) => {
-  const WeatherIcon = forecastIcons[forecast.forecast] || FiCloud
+  const WeatherIcon = forecastIcons[forecast.text] || FiCloud
 
   return (
-    <Box 
-      borderWidth="1px" 
-      borderRadius="md" 
-      p={3} 
+    <Box
+      borderWidth="1px"
+      borderRadius="md"
+      p={3}
       height="100%"
       boxShadow="sm"
     >
       <Box pb={2}>
         <Heading size="sm" truncate>
-          {forecast.area}
+          {forecast.code}
         </Heading>
       </Box>
       <Box>
         <Flex direction="column" alignItems="center">
           <Icon as={WeatherIcon} boxSize={8} mb={2} />
-          <Text fontSize="sm" textAlign="center" title={forecast.forecast}>
-            {forecast.forecast}
+          <Text fontSize="sm" textAlign="center" title={forecast.text}>
+            {forecast.text}
           </Text>
         </Flex>
       </Box>
@@ -80,7 +80,7 @@ const ForecastCard: React.FC<ForecastCardProps> = ({ forecast }) => {
 }
 
 interface ForecastPeriodDisplayProps {
-  validPeriod: ForecastPeriod
+  validPeriod: ForecastPeriodGeneral
 }
 
 const ForecastPeriodDisplay: React.FC<ForecastPeriodDisplayProps> = ({
@@ -112,8 +112,8 @@ const ForecastPeriodDisplay: React.FC<ForecastPeriodDisplayProps> = ({
 }
 
 interface WeatherForecastProps {
-  forecasts: Forecast[]
-  validPeriod: ForecastPeriod
+  forecasts: ForecastInfo[]
+  validPeriod: ForecastPeriodGeneral
   areaMetadata: AreaMetadata[]
 }
 
@@ -123,14 +123,14 @@ const WeatherForecast: React.FC<WeatherForecastProps> = ({
   areaMetadata,
 }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
-  
+
   return (
     <Box>
       <ForecastPeriodDisplay validPeriod={validPeriod} />
-      
+
       <Flex justifyContent="center" mb={4}>
         <ButtonGroup attached variant="outline" size="sm">
-          <Button 
+          <Button
             onClick={() => setViewMode('grid')}
             colorScheme={viewMode === 'grid' ? "blue" : undefined}
           >
@@ -139,7 +139,7 @@ const WeatherForecast: React.FC<WeatherForecastProps> = ({
               <Text>Grid View</Text>
             </Flex>
           </Button>
-          <Button 
+          <Button
             onClick={() => setViewMode('map')}
             colorScheme={viewMode === 'map' ? "blue" : undefined}
           >
@@ -150,7 +150,7 @@ const WeatherForecast: React.FC<WeatherForecastProps> = ({
           </Button>
         </ButtonGroup>
       </Flex>
-      
+
       {viewMode === 'grid' && (
         <Grid
           templateColumns={{
@@ -163,16 +163,16 @@ const WeatherForecast: React.FC<WeatherForecastProps> = ({
           gap={4}
         >
           {forecasts.map((forecast, index) => (
-            <ForecastCard key={`${forecast.area}-${index}`} forecast={forecast} />
+            <ForecastCard key={`${forecast.code}-${index}`} forecast={forecast} />
           ))}
         </Grid>
       )}
-      
+
       {viewMode === 'map' && (
-        <WeatherMap 
-          forecasts={forecasts} 
-          validPeriod={validPeriod} 
-          areaMetadata={areaMetadata} 
+        <WeatherMap
+          forecasts={forecasts}
+          validPeriod={validPeriod}
+          areaMetadata={areaMetadata}
         />
       )}
     </Box>
