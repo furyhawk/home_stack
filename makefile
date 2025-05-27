@@ -5,25 +5,30 @@ COMPOSE_FILE=docker-compose.yml
 PROJECT_NAME=home
 DB_VOLUME=home_app-db-data
 BACKUP_DIR=./backups
+ENV_FILE=.env
+
+# Load environment variables from .env
+include $(ENV_FILE)
+export
 
 # Targets
 .PHONY: up down restart logs build reset
 
 up:
-	podman compose up -d
+	podman compose --env-file $(ENV_FILE) up -d
 
 down:
-	podman compose down
+	podman compose --env-file $(ENV_FILE) down
 	@echo "Containers stopped. Use 'make up' to start them again."
 
 build:
-	DOCKER_BUILDKIT=0 podman compose build --no-cache
+	DOCKER_BUILDKIT=0 podman compose --env-file $(ENV_FILE) build --no-cache
 	@echo "Containers built. Use 'make up' to start them."
 
 restart: down build up
 
 reset:
-	podman compose down -v
+	podman compose --env-file $(ENV_FILE) down -v
 	podman system prune -f
 	podman volume prune -f
 	podman network prune -f
@@ -46,17 +51,17 @@ restore:
 	podman volume rm $(DB_VOLUME) || true
 	podman volume create --name $(DB_VOLUME)
 	podman volume import $(DB_VOLUME) --input $(LATEST_BACKUP)
-	podman compose up -d
+	podman compose --env-file $(ENV_FILE) up -d
 	@echo "Backup and restore completed."
 	@echo "Please check the logs for any errors."
 	@echo "Use 'make logs' to view the logs."
 
 logs:
-	podman compose logs
+	podman compose --env-file $(ENV_FILE) logs
 	@echo "Logs for all containers:"
 
 clean:
-	podman compose down
+	podman compose --env-file $(ENV_FILE) down
 	podman volume rm $(DB_VOLUME)
 	@echo "Cleaned up all containers and volumes."
 
@@ -97,4 +102,4 @@ info:
 	@echo "\n===== Podman Images ====="
 	podman images
 	@echo "\n===== Podman Compose Config ====="
-	podman compose config
+	podman compose --env-file $(ENV_FILE) config
