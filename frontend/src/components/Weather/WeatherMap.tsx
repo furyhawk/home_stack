@@ -14,7 +14,7 @@ import {
   FiWind,
 } from "react-icons/fi"
 
-import { Forecast, ForecastPeriod, AreaMetadata } from "@/client/types.gen"
+import { ForecastInfo, ForecastPeriodGeneral, AreaMetadata } from "@/client/types.gen"
 
 // Fix for default markers not showing
 // In a real app, you'd want to use proper image assets
@@ -60,19 +60,19 @@ const MapCenter = ({ center }: { center: [number, number] }) => {
 };
 
 interface WeatherMapProps {
-  forecasts: Forecast[];
-  validPeriod: ForecastPeriod;
+  forecasts: ForecastInfo[];
+  validPeriod: ForecastPeriodGeneral;
   areaMetadata: AreaMetadata[];
 }
 
-const WeatherMap: React.FC<WeatherMapProps> = ({ 
-  forecasts, 
+const WeatherMap: React.FC<WeatherMapProps> = ({
+  forecasts,
   validPeriod,
   areaMetadata
 }) => {
   // Singapore coordinates (centered on the island)
   const center: [number, number] = [1.3521, 103.8198];
-  
+
   // Generate a custom icon based on the weather forecast
   const createWeatherIcon = (forecast: string) => {
     // Determine color based on the forecast
@@ -83,7 +83,7 @@ const WeatherMap: React.FC<WeatherMapProps> = ({
     if (forecast.includes("Thunder")) color = "#9F7AEA"; // purple
     if (forecast.includes("Wind")) color = "#38B2AC"; // teal
     if (forecast.includes("Snow")) color = "#BEE3F8"; // light blue
-    
+
     // Create an HTML element to render the icon
     const iconHtml = `<div style="
       background-color: white;
@@ -100,7 +100,7 @@ const WeatherMap: React.FC<WeatherMapProps> = ({
         ${getIconPath(forecast)}
       </svg>
     </div>`;
-    
+
     // Create a custom divIcon with the HTML content
     return L.divIcon({
       html: iconHtml,
@@ -110,10 +110,10 @@ const WeatherMap: React.FC<WeatherMapProps> = ({
       popupAnchor: [0, -32]
     });
   };
-  
+
   // Get SVG path for the icon based on forecast
   const getIconPath = (forecast: string) => {
-    if (forecast.includes("Fair") || forecast.includes("Sun")) 
+    if (forecast.includes("Fair") || forecast.includes("Sun"))
       return '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
     if (forecast.includes("Cloudy") || forecast.includes("Hazy") || forecast.includes("Cloud") && !forecast.includes("Rain") && !forecast.includes("Drizzle"))
       return '<path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>';
@@ -130,12 +130,12 @@ const WeatherMap: React.FC<WeatherMapProps> = ({
     // Default cloud icon
     return '<path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>';
   };
-  
+
   // For backward compatibility, still set the default icon
   useEffect(() => {
     L.Marker.prototype.options.icon = defaultIcon;
   }, []);
-  
+
   // Helper function to get color for icons in popup
   const getIconColor = (forecast: string) => {
     if (forecast.includes("Fair")) return "#ECC94B"; // yellow
@@ -154,21 +154,21 @@ const WeatherMap: React.FC<WeatherMapProps> = ({
       hour12: true,
     });
   };
-  
+
   // Join area metadata with forecasts
   const forecastsWithLocations = forecasts.map(forecast => {
-    const metadata = areaMetadata.find(area => area.name === forecast.area);
+    const metadata = areaMetadata.find(area => area.name === forecast.code);
     return {
       ...forecast,
       location: metadata?.label_location
     };
   }).filter(f => f.location); // Only include forecasts with location data
-  
+
   return (
     <Box height="500px" width="100%" borderRadius="md" overflow="hidden" my={4}>
-      <MapContainer 
-        center={center} 
-        zoom={11} 
+      <MapContainer
+        center={center}
+        zoom={11}
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer
@@ -176,22 +176,22 @@ const WeatherMap: React.FC<WeatherMapProps> = ({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <MapCenter center={center} />
-        
+
         {forecastsWithLocations.map((forecast, index) => (
-          <Marker 
-            key={`${forecast.area}-${index}`}
+          <Marker
+            key={`${forecast.code}-${index}`}
             position={[forecast.location!.latitude, forecast.location!.longitude]}
-            icon={createWeatherIcon(forecast.forecast)}
+            icon={createWeatherIcon(forecast.text)}
           >
             <Popup>
               <Box p={1}>
-                <Box fontWeight="bold">{forecast.area}</Box>
+                <Box fontWeight="bold">{forecast.code}</Box>
                 <Box display="flex" alignItems="center" gap={2} my={1}>
-                  {React.createElement(forecastIcons[forecast.forecast] || FiCloud, {
-                    color: getIconColor(forecast.forecast),
+                  {React.createElement(forecastIcons[forecast.text] || FiCloud, {
+                    color: getIconColor(forecast.text),
                     size: 18
                   })}
-                  <span>{forecast.forecast}</span>
+                  <span>{forecast.text}</span>
                 </Box>
                 <Box fontSize="xs" mt={1}>
                   {formatDateTime(validPeriod.start)} - {formatDateTime(validPeriod.end)}
