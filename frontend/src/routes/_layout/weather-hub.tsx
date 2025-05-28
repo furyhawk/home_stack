@@ -151,6 +151,7 @@ function getWeatherIcon(forecast: string): string {
 
 function TwoHourForecast() {
     const [selectedArea, setSelectedArea] = useState<string[]>(["All Areas"])
+    const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid')
 
     const { data, isLoading, error } = useQuery<ApiNestedResponse<TwoHourForecastPayload>>({
         queryKey: ["weather", "two-hour-forecast"],
@@ -167,7 +168,7 @@ function TwoHourForecast() {
 
     const forecasts = data.data.items[0]?.forecasts || []
     const validPeriod = data.data.items[0]?.valid_period
-    // const areaMetadata = data.data.area_metadata || [] // Unused variable
+    const areaMetadata = data.data.area_metadata || []
 
     // Get unique areas for dropdown
     const areaNames = forecasts.map((f: Forecast) => f.area)
@@ -178,6 +179,56 @@ function TwoHourForecast() {
         ? forecasts
         : forecasts.filter((forecast: Forecast) => selectedArea.includes(forecast.area))
 
+    // Create weather icon for map markers
+    const createWeatherIcon = (forecast: string, area: string) => {
+        let color = "#718096"; // Default gray color
+        if (forecast.includes("Fair")) color = "#ECC94B"; // yellow
+        if (forecast.includes("Cloud") || forecast.includes("Hazy")) color = "#A0AEC0"; // gray
+        if (forecast.includes("Rain") || forecast.includes("Shower")) color = "#4299E1"; // blue
+        if (forecast.includes("Thunder")) color = "#9F7AEA"; // purple
+        if (forecast.includes("Wind")) color = "#38B2AC"; // teal
+
+        const iconHtml = `
+            <div style="
+                background: rgba(255, 255, 255, 0.95);
+                border: 2px solid ${color};
+                border-radius: 8px;
+                padding: 6px 8px;
+                font-size: 12px;
+                font-weight: bold;
+                text-align: center;
+                box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+                min-width: 80px;
+                max-width: 120px;
+                transform: translate(-50%, -100%);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            ">
+                <div style="font-size: 18px; margin-bottom: 4px;">${getWeatherIcon(forecast)}</div>
+                <div style="color: #2D3748; font-size: 10px; margin-bottom: 2px;">${area}</div>
+                <div style="color: #4A5568; font-size: 9px; line-height: 1.2;">${forecast}</div>
+            </div>
+        `;
+
+        return L.divIcon({
+            html: iconHtml,
+            className: 'custom-weather-marker',
+            iconSize: [80, 60],
+            iconAnchor: [40, 60],
+            popupAnchor: [0, -60]
+        });
+    };
+
+    // Filter forecasts with location data for map view
+    const forecastsWithLocation = forecasts.map(forecast => {
+        const metadata = areaMetadata.find(area => area.name === forecast.area);
+        return {
+            ...forecast,
+            location: metadata?.label_location
+        };
+    }).filter(f => f.location && (selectedArea.includes("All Areas") || selectedArea.includes(f.area)));
+
     return (
         <Box>
             {validPeriod && (
@@ -185,53 +236,119 @@ function TwoHourForecast() {
                     <Text fontWeight="medium">
                         Valid: {new Date(validPeriod.start).toLocaleTimeString()} - {new Date(validPeriod.end).toLocaleTimeString()}
                     </Text>
-                    <ChakraSelect.Root
-                        value={selectedArea}
-                        collection={createListCollection({
-                            items: uniqueAreas.map(area => ({ value: area, label: area }))
-                        })}
-                        onValueChange={(details) => {
-                            // Handle array of values for multi-select
-                            if (Array.isArray(details)) {
-                                setSelectedArea(details);
-                            } else if (typeof details === 'string') {
-                                setSelectedArea([details]);
-                            } else if (details && typeof (details as any).value === 'string') {
-                                setSelectedArea([(details as any).value]);
-                            }
-                        }}
-                        width="200px"
-                    >
-
-                        <ChakraSelect.Trigger>
-                            <ChakraSelect.ValueText placeholder="Select an area" />
-                        </ChakraSelect.Trigger>
-                        <ChakraSelect.Positioner>
-                            <ChakraSelect.Content>
-                                {uniqueAreas.map(area => (
-                                    <ChakraSelect.Item key={area} item={{ value: area, label: area }}>
-                                        {area}
-                                    </ChakraSelect.Item>
-                                ))}
-                            </ChakraSelect.Content>
-                        </ChakraSelect.Positioner>
-                    </ChakraSelect.Root>
+                    <HStack gap={4}>
+                        {/* View Mode Toggle */}
+                        <HStack>
+                            <Badge 
+                                variant={viewMode === 'grid' ? 'solid' : 'outline'}
+                                colorScheme="blue"
+                                cursor="pointer"
+                                onClick={() => setViewMode('grid')}
+                                px={3}
+                                py={1}
+                            >
+                                Grid
+                            </Badge>
+                            <Badge 
+                                variant={viewMode === 'map' ? 'solid' : 'outline'}
+                                colorScheme="blue"
+                                cursor="pointer"
+                                onClick={() => setViewMode('map')}
+                                px={3}
+                                py={1}
+                            >
+                                Map
+                            </Badge>
+                        </HStack>
+                        
+                        <ChakraSelect.Root
+                            value={selectedArea}
+                            collection={createListCollection({
+                                items: uniqueAreas.map(area => ({ value: area, label: area }))
+                            })}
+                            onValueChange={(details) => {
+                                // Handle array of values for multi-select
+                                if (Array.isArray(details)) {
+                                    setSelectedArea(details);
+                                } else if (typeof details === 'string') {
+                                    setSelectedArea([details]);
+                                } else if (details && typeof (details as any).value === 'string') {
+                                    setSelectedArea([(details as any).value]);
+                                }
+                            }}
+                            width="200px"
+                        >
+                            <ChakraSelect.Trigger>
+                                <ChakraSelect.ValueText placeholder="Select an area" />
+                            </ChakraSelect.Trigger>
+                            <ChakraSelect.Positioner>
+                                <ChakraSelect.Content>
+                                    {uniqueAreas.map(area => (
+                                        <ChakraSelect.Item key={area} item={{ value: area, label: area }}>
+                                            {area}
+                                        </ChakraSelect.Item>
+                                    ))}
+                                </ChakraSelect.Content>
+                            </ChakraSelect.Positioner>
+                        </ChakraSelect.Root>
+                    </HStack>
                 </Flex>
             )}
 
-            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={4}> {/* Changed spacing to gap */}
-                {filteredForecasts.map((forecast: Forecast) => (
-                    <ChakraCard.Root key={forecast.area}>
-                        <ChakraCard.Body>
-                            <HStack mb={2} gap={2}> {/* Changed spacing to gap */}
-                                <Text fontSize="xl">{getWeatherIcon(forecast.forecast)}</Text>
-                                <Heading size="md">{forecast.area}</Heading>
-                            </HStack>
-                            <Text>{forecast.forecast}</Text>
-                        </ChakraCard.Body>
-                    </ChakraCard.Root>
-                ))}
-            </SimpleGrid>
+            {viewMode === 'grid' && (
+                <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={4}>
+                    {filteredForecasts.map((forecast: Forecast) => (
+                        <ChakraCard.Root key={forecast.area}>
+                            <ChakraCard.Body>
+                                <HStack mb={2} gap={2}>
+                                    <Text fontSize="xl">{getWeatherIcon(forecast.forecast)}</Text>
+                                    <Heading size="md">{forecast.area}</Heading>
+                                </HStack>
+                                <Text>{forecast.forecast}</Text>
+                            </ChakraCard.Body>
+                        </ChakraCard.Root>
+                    ))}
+                </SimpleGrid>
+            )}
+
+            {viewMode === 'map' && (
+                <Box height="500px" width="100%" borderRadius="md" overflow="hidden" my={4}>
+                    {forecastsWithLocation.length > 0 ? (
+                        <MapContainer
+                            center={[1.3521, 103.8198]}
+                            zoom={11}
+                            style={{ height: "100%", width: "100%" }}
+                        >
+                            <TileLayer
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+                            />
+                            {forecastsWithLocation.map((forecast, index) => (
+                                <Marker
+                                    key={`${forecast.area}-${index}`}
+                                    position={[forecast.location!.latitude, forecast.location!.longitude]}
+                                    icon={createWeatherIcon(forecast.forecast, forecast.area)}
+                                />
+                            ))}
+                        </MapContainer>
+                    ) : (
+                        <Flex 
+                            height="500px" 
+                            alignItems="center" 
+                            justifyContent="center" 
+                            bg="gray.50" 
+                            borderRadius="md"
+                        >
+                            <VStack>
+                                <Text fontSize="lg" color="gray.600">No location data available for map view</Text>
+                                <Text fontSize="sm" color="gray.500">
+                                    Area metadata is required to display forecasts on the map
+                                </Text>
+                            </VStack>
+                        </Flex>
+                    )}
+                </Box>
+            )}
         </Box>
     )
 }
