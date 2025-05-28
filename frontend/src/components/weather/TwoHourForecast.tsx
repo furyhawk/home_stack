@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Box, Flex, Text, HStack, Badge, SimpleGrid, Spinner } from '@chakra-ui/react';
-import { createListCollection } from '@ark-ui/react';
 import { WeatherService } from '@/client/sdk.gen';
 import { getWeatherIcon } from './weatherUtils';
+import WeatherMap from './WeatherMap';
 
 // Types
 interface Forecast { area: string; forecast: string; }
@@ -13,7 +13,6 @@ interface TwoHourForecastPayload { items?: TwoHourForecastItem[]; area_metadata?
 type ApiNestedResponse<P> = { data?: P };
 
 const TwoHourForecast: React.FC = () => {
-  const [selectedArea, setSelectedArea] = useState<string[]>(['All Areas']);
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('map');
 
   const { data, isLoading, error } = useQuery<ApiNestedResponse<TwoHourForecastPayload>>({
@@ -30,20 +29,6 @@ const TwoHourForecast: React.FC = () => {
 
   const forecasts = items[0].forecasts || [];
   const validPeriod = items[0].valid_period;
-  const areaMetadata = data.data.area_metadata || [];
-
-  // Unique area names
-  const uniqueAreas = ['All Areas', ...Array.from(new Set(forecasts.map(f => f.area))).sort()];
-
-  // Filter forecasts
-  const filteredForecasts = selectedArea.includes('All Areas')
-    ? forecasts
-    : forecasts.filter(f => selectedArea.includes(f.area));
-
-  // Map view data
-  const forecastsWithLocation = forecasts
-    .map(f => ({ ...f, location: areaMetadata.find(a => a.name === f.area)?.label_location }))
-    .filter(f => f.location && (selectedArea.includes('All Areas') || selectedArea.includes(f.area)));
 
   return (
     <Box>
@@ -53,8 +38,8 @@ const TwoHourForecast: React.FC = () => {
             Valid: {new Date(validPeriod.start).toLocaleTimeString()} -{' '}
             {new Date(validPeriod.end).toLocaleTimeString()}
           </Text>
-          <HStack spacing={4}>
-            <HStack>
+          <HStack gap={4}>
+            <HStack gap={2}>
               <Badge variant={viewMode === 'grid' ? 'solid' : 'outline'} colorScheme="blue" cursor="pointer" onClick={() => setViewMode('grid')}>
                 Grid
               </Badge>
@@ -62,15 +47,14 @@ const TwoHourForecast: React.FC = () => {
                 Map
               </Badge>
             </HStack>
-            {/* Area select omitted for map-only display */}
           </HStack>
         </Flex>
       )}
       {viewMode === 'grid' && (
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
-          {filteredForecasts.map(f => (
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={4}>
+          {forecasts.map(f => (
             <Box key={f.area} borderWidth={1} borderRadius="md" p={4}>
-              <HStack mb={2} spacing={2}>
+              <HStack mb={2} gap={2}>
                 <Text fontSize="xl">{getWeatherIcon(f.forecast)}</Text>
                 <Text fontWeight="bold">{f.area}</Text>
               </HStack>
@@ -79,7 +63,11 @@ const TwoHourForecast: React.FC = () => {
           ))}
         </SimpleGrid>
       )}
-      {/* Map view component can be reused */}
+      {viewMode === 'map' && (
+        <Box height="500px" width="100%" borderRadius="md" overflow="hidden" my={4}>
+          <WeatherMap forecastData={data} />
+        </Box>
+      )}
     </Box>
   );
 };

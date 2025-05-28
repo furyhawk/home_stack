@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Spinner, Text, Box, VStack, HStack, Heading } from '@chakra-ui/react';
-import { Card as ChakraCard } from '@chakra-ui/react';
+import { Spinner, Text, Box, VStack, HStack, Heading, SimpleGrid } from '@chakra-ui/react';
+import { Card } from '@chakra-ui/react';
 import { WeatherService } from '@/client/sdk.gen';
 
 type ApiNestedResponse<P> = { data?: P };
@@ -48,9 +48,9 @@ const WindDirection: React.FC = () => {
 
   return (
     <Box>
-      <VStack align="stretch" spacing={4} mb={6}>
-        <ChakraCard>
-          <ChakraCard.Body>
+      <VStack align="stretch" gap={4} mb={6}>
+        <Card.Root>
+          <Card.Body>
             <Heading size="md" mb={2}>Average Wind Direction</Heading>
             <HStack>
               <Text fontSize="3xl" fontWeight="bold">{avgDirection}°</Text>
@@ -58,22 +58,22 @@ const WindDirection: React.FC = () => {
             </HStack>
             <Text fontSize="sm" color="gray.500">Based on {validReadings.length} station readings</Text>
             <Text fontSize="xs" color="gray.400" mt={1}>Last updated: {new Date(latestReading.timestamp).toLocaleString()}</Text>
-          </ChakraCard.Body>
-        </ChakraCard>
+          </Card.Body>
+        </Card.Root>
       </VStack>
       <Heading size="md" mb={4}>Wind Direction by Station</Heading>
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
+      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={4}>
         {latestReading.data.slice(0, 9).map(r => (
-          <ChakraCard key={r.stationId}>
-            <ChakraCard.Body>
+          <Card.Root key={r.stationId}>
+            <Card.Body>
               <Text fontWeight="bold" fontSize="sm">{stationMap.get(r.stationId) || r.stationId}</Text>
               <Text fontSize="xs" color="gray.500" mb={1}>{r.stationId}</Text>
               <HStack>
                 <Text fontSize="2xl">{r.value ?? 0}°</Text>
                 <Text>({getCardinalDirection(r.value ?? 0)})</Text>
               </HStack>
-            </ChakraCard.Body>
-          </ChakraCard>
+            </Card.Body>
+          </Card.Root>
         ))}
       </SimpleGrid>
     </Box>
