@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Spinner, Text, Box, SimpleGrid, HStack, Heading } from '@chakra-ui/react';
-import { Card as ChakraCard } from '@chakra-ui/react';
+import { Spinner, Text, Box, SimpleGrid, HStack } from '@chakra-ui/react';
+import { Card } from '@chakra-ui/react';
 import { WeatherService } from '@/client/sdk.gen';
 import { getWeatherIcon } from './weatherUtils';
 
@@ -30,20 +30,20 @@ const FourDayOutlook: React.FC = () => {
     <Box>
       <Text mb={4}>Updated: {new Date(forecastData.timestamp).toLocaleString()}</Text>
       {forecastData.forecasts && forecastData.forecasts.length > 0 && (
-        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+        <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
           {forecastData.forecasts.map((f, idx) => (
-            <ChakraCard key={idx}>
-              <ChakraCard.Body>
+            <Card.Root key={idx}>
+              <Card.Body>
                 <Text fontWeight="bold">{new Date(f.timestamp).toLocaleDateString()}</Text>
-                <HStack spacing={2} mb={2}>
+                <HStack gap={2} mb={2}>
                   <Text fontSize="xl">{getWeatherIcon(f.forecast.text)}</Text>
                   <Text>{f.forecast.text}</Text>
                 </HStack>
                 {f.temperature && (
                   <Text fontSize="sm">Temperature: {f.temperature.low}°C - {f.temperature.high}°C</Text>
                 )}
-              </ChakraCard.Body>
-            </ChakraCard>
+              </Card.Body>
+            </Card.Root>
           ))}
         </SimpleGrid>
       )}
