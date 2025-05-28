@@ -127,11 +127,28 @@ async def make_api_request(
                             # If it still fails, continue with other fixes
                             print(f"Still having validation issues after 24-hour forecast fix: {str(new_e)}")
                 
-                # Handle readings issues (station_id -> id)
-                if 'station_id' in str(e) or 'value' in str(e) and 'Reading' in str(e):
+                # Handle readings issues (station_id -> stationId mapping and data flattening)
+                if 'station_id' in str(e) or 'value' in str(e) or 'Reading' in str(e) or 'stationId' in str(e):
                     if 'data' in data and 'readings' in data['data']:
                         for reading in data['data']['readings']:
-                            if 'id' in reading and 'station_id' not in reading:
+                            # The API structure has timestamp at reading level and data array with stationId/value pairs
+                            # but the frontend/older structure expects flattened readings
+                            if 'data' in reading and isinstance(reading['data'], list):
+                                # For air temperature, flatten the data structure
+                                # Convert from: {"timestamp": "...", "data": [{"stationId": "S109", "value": 33}]}
+                                # To: [{"station_id": "S109", "value": 33, "timestamp": "..."}]
+                                flattened_data = []
+                                timestamp = reading.get('timestamp')
+                                for data_point in reading['data']:
+                                    flattened_data.append({
+                                        'station_id': data_point.get('stationId', data_point.get('id')),
+                                        'value': data_point.get('value'),
+                                        'timestamp': timestamp
+                                    })
+                                # Replace the readings array with flattened structure
+                                data['data']['readings'] = flattened_data
+                                break  # Only process first reading with nested data
+                            elif 'id' in reading and 'station_id' not in reading:
                                 reading['station_id'] = reading['id']
                     
                     # Try parsing again with the fixed data

@@ -210,14 +210,24 @@ class Station(BaseModel):
     }
 
 
-class Reading(BaseModel):
-    station_id: Optional[str] = Field(None, alias="id")  # API returns 'id' instead of 'station_id'
-    value: Optional[float] = None
-    timestamp: datetime
+# Individual reading data point within a timestamp
+class ReadingDataPoint(BaseModel):
+    station_id: str = Field(alias="stationId")
+    value: float
     
     model_config = {
-        "extra": "ignore",  # Ignore extra fields in API response
-        "populate_by_name": True  # Allow both snake_case and camelCase
+        "extra": "ignore",
+        "populate_by_name": True
+    }
+
+
+class Reading(BaseModel):
+    timestamp: datetime
+    data: List[ReadingDataPoint]
+    
+    model_config = {
+        "extra": "ignore",
+        "populate_by_name": True
     }
 
 
