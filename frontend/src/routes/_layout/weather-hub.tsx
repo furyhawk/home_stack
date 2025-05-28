@@ -56,7 +56,11 @@ interface AirTemperaturePayload {
 
 interface OutlookForecast {
     date: string;
-    forecast: string;
+    forecast: {
+        summary: string;
+        code: string;
+        text: string;
+    };
     temperature?: { low: number; high: number };
 }
 
@@ -88,6 +92,11 @@ export const Route = createFileRoute("/_layout/weather-hub")({
 
 // Utility function to get weather icon based on forecast text
 function getWeatherIcon(forecast: string): string {
+    // Add a check to ensure forecast is a string before calling toLowerCase
+    if (typeof forecast !== 'string' || forecast === null) {
+        return "❓"; // Default icon for unknown or invalid forecast type
+    }
+
     const lowerCaseForecast = forecast.toLowerCase()
 
     if (lowerCaseForecast.includes("thundery")) return "⛈️"
@@ -262,8 +271,8 @@ function FourDayOutlook() {
                             <ChakraCard.Body>
                                 <Text fontWeight="bold">{new Date(forecast.date).toLocaleDateString()}</Text>
                                 <HStack gap={2} mb={2}> {/* Changed spacing to gap */}
-                                    <Text fontSize="xl">{getWeatherIcon(forecast.forecast)}</Text>
-                                    <Text>{forecast.forecast}</Text>
+                                    <Text fontSize="xl">{getWeatherIcon(forecast.forecast.text)}</Text>
+                                    <Text>{forecast.forecast.text}</Text>
                                 </HStack>
                                 {forecast.temperature && (
                                     <Text fontSize="sm">
