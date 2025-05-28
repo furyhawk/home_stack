@@ -548,6 +548,19 @@ function WeatherMap() {
                             <Text fontWeight="bold">{station.name}</Text>
                             <Text>Temperature: {reading.value?.toFixed(1)}°C</Text>
                         </Popup>
+                        <Text
+                            position="absolute"
+                            style={{
+                                transform: "translate(-50%, -100%)",
+                                backgroundColor: "white",
+                                padding: "2px 4px",
+                                borderRadius: "4px",
+                                fontSize: "12px",
+                                fontWeight: "bold",
+                            }}
+                        >
+                            {reading.value?.toFixed(1)}°C
+                        </Text>
                     </Marker>
                 );
             })}
