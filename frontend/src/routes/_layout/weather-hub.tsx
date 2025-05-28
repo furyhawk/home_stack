@@ -44,14 +44,31 @@ interface TwoHourForecastPayload {
     area_metadata?: any[]; // Define AreaMetadata if its structure is known and used
 }
 
+interface AirTempStation {
+    id: string;
+    deviceId: string;
+    name: string;
+    location: {
+        latitude: number;
+        longitude: number;
+    };
+}
+
+interface AirTempDataPoint {
+    stationId: string;
+    value: number;
+}
+
 interface AirTempReading {
-    id: string; // Assuming 'id' based on WindDirection component and errors
-    value: number | null;
-    timestamp?: string;
+    timestamp: string;
+    data: AirTempDataPoint[];
 }
 
 interface AirTemperaturePayload {
+    stations?: AirTempStation[];
     readings?: AirTempReading[];
+    readingType?: string;
+    readingUnit?: string;
 }
 
 interface OutlookForecast {
@@ -209,14 +226,26 @@ function AirTemperature() {
     if (isLoading) return <Spinner />
     if (error || !data?.data) return <Text color="red.500">Error loading temperature data</Text>
 
-    if (!Array.isArray(data.data.readings) || data.data.readings.length === 0) {
+    const { stations = [], readings = [] } = data.data;
+
+    if (stations.length === 0 || readings.length === 0) {
         return <Text>No temperature data available</Text>
     }
 
-    const readings = data.data.readings
+    // Get the latest reading
+    const latestReading = readings[0];
+    if (!latestReading || !latestReading.data) {
+        return <Text>No temperature data available</Text>
+    }
+
+    // Create a map of station IDs to station names
+    const stationMap = new Map(stations.map(station => [station.id, station.name]));
 
     // Calculate average temperature
-    const avgTemp = readings.reduce((sum, reading) => sum + (reading.value ?? 0), 0) / readings.length
+    const validReadings = latestReading.data.filter(reading => reading.value !== null);
+    const avgTemp = validReadings.length > 0 
+        ? validReadings.reduce((sum, reading) => sum + reading.value, 0) / validReadings.length 
+        : 0;
 
     return (
         <Box>
@@ -225,18 +254,28 @@ function AirTemperature() {
                     <ChakraCard.Body>
                         <Heading size="md" mb={2}>Average Temperature</Heading>
                         <Text fontSize="3xl" fontWeight="bold">{avgTemp.toFixed(1)}°C</Text>
-                        <Text fontSize="sm" color="gray.500">Based on {readings.length} station readings</Text>
+                        <Text fontSize="sm" color="gray.500">
+                            Based on {validReadings.length} station readings
+                        </Text>
+                        <Text fontSize="xs" color="gray.400" mt={1}>
+                            Last updated: {new Date(latestReading.timestamp).toLocaleString()}
+                        </Text>
                     </ChakraCard.Body>
                 </ChakraCard.Root>
             </VStack>
 
             <Heading size="md" mb={4}>Temperature Readings by Station</Heading>
             <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={4}> {/* Changed spacing to gap */}
-                {readings.slice(0, 9).map((reading: AirTempReading) => (
-                    <ChakraCard.Root key={reading.id}> {/* Changed station_id to id */}
+                {latestReading.data.slice(0, 9).map((reading: AirTempDataPoint) => (
+                    <ChakraCard.Root key={reading.stationId}>
                         <ChakraCard.Body>
-                            <Text fontWeight="bold">{reading.id}</Text> {/* Changed station_id to id */}
-                            <Text fontSize="2xl">{(reading.value ?? 0).toFixed(1)}°C</Text>
+                            <Text fontWeight="bold" fontSize="sm">
+                                {stationMap.get(reading.stationId) || reading.stationId}
+                            </Text>
+                            <Text fontSize="xs" color="gray.500" mb={1}>
+                                {reading.stationId}
+                            </Text>
+                            <Text fontSize="2xl">{reading.value.toFixed(1)}°C</Text>
                         </ChakraCard.Body>
                     </ChakraCard.Root>
                 ))}
