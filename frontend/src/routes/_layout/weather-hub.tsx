@@ -55,7 +55,8 @@ interface AirTemperaturePayload {
 }
 
 interface OutlookForecast {
-    date: string;
+    timestamp: string; // Changed from date: string
+    day: string;       // Added from payload
     forecast: {
         summary: string;
         code: string;
@@ -269,7 +270,7 @@ function FourDayOutlook() {
                     {forecastData.forecasts.map((forecast: OutlookForecast, index: number) => (
                         <ChakraCard.Root key={index}>
                             <ChakraCard.Body>
-                                <Text fontWeight="bold">{new Date(forecast.date).toLocaleDateString()}</Text>
+                                <Text fontWeight="bold">{new Date(forecast.timestamp).toLocaleDateString()}</Text>
                                 <HStack gap={2} mb={2}> {/* Changed spacing to gap */}
                                     <Text fontSize="xl">{getWeatherIcon(forecast.forecast.text)}</Text>
                                     <Text>{forecast.forecast.text}</Text>
