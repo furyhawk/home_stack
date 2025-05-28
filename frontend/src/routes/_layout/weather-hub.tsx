@@ -20,7 +20,8 @@ import {
 import { createFileRoute } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import { createListCollection } from "@ark-ui/react"
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 import { WeatherService } from "@/client/sdk.gen"
@@ -505,29 +506,69 @@ function WindDirection() {
 }
 
 function WeatherMap() {
-    const { data, isLoading, error } = useQuery<ApiNestedResponse<AirTemperaturePayload>>({
+    // Fetch air temperature data
+    const { data: tempData, isLoading: tempLoading, error: tempError } = useQuery<ApiNestedResponse<AirTemperaturePayload>>({
         queryKey: ["weather", "air-temperature"],
         queryFn: () => WeatherService.getAirTemperature() as Promise<ApiNestedResponse<AirTemperaturePayload>>,
         refetchInterval: 1000 * 60 * 30, // Refetch every 30 minutes
     });
 
-    if (isLoading) return <Spinner />;
-    if (error || !data?.data) return <Text color="red.500">Error loading map data</Text>;
+    // Fetch wind direction data
+    const { data: windData, isLoading: windLoading, error: windError } = useQuery<ApiNestedResponse<WindDirectionPayload>>({
+        queryKey: ["weather", "wind-direction"],
+        queryFn: () => WeatherService.getWindDirection() as Promise<ApiNestedResponse<WindDirectionPayload>>,
+        refetchInterval: 1000 * 60 * 30, // Refetch every 30 minutes
+    });
 
-    const { stations = [], readings = [] } = data.data;
+    // Fetch forecast data for weather icons
+    const { data: forecastData, isLoading: forecastLoading, error: forecastError } = useQuery<ApiNestedResponse<TwoHourForecastPayload>>({
+        queryKey: ["weather", "two-hour-forecast"],
+        queryFn: () => WeatherService.getTwoHourForecast() as Promise<ApiNestedResponse<TwoHourForecastPayload>>,
+        refetchInterval: 1000 * 60 * 30, // Refetch every 30 minutes
+    });
 
-    if (stations.length === 0 || readings.length === 0) {
+    if (tempLoading || windLoading || forecastLoading) return <Spinner />;
+    if (tempError || windError || forecastError || !tempData?.data || !windData?.data || !forecastData?.data) {
+        return <Text color="red.500">Error loading map data</Text>;
+    }
+
+    const { stations: tempStations = [], readings: tempReadings = [] } = tempData.data;
+    const { readings: windReadings = [] } = windData.data;
+    const forecasts = forecastData.data.items?.[0]?.forecasts || [];
+
+    if (tempStations.length === 0 || tempReadings.length === 0) {
         return <Text>No map data available</Text>;
     }
 
-    // Get the latest reading
-    const latestReading = readings[0];
-    if (!latestReading || !latestReading.data) {
+    // Get the latest readings
+    const latestTempReading = tempReadings[0];
+    const latestWindReading = windReadings[0];
+
+    if (!latestTempReading || !latestTempReading.data) {
         return <Text>No map data available</Text>;
     }
 
-    // Create a map of station IDs to station details
-    const stationMap = new Map(stations.map(station => [station.id, station]));
+    // Create maps for easy lookup
+    const tempStationMap = new Map(tempStations.map(station => [station.id, station]));
+    const windDataMap = new Map(latestWindReading?.data?.map(reading => [reading.stationId, reading.value]) || []);
+
+    // Function to get cardinal direction from degrees
+    const getCardinalDirection = (degrees: number | null | undefined) => {
+        if (degrees === null || degrees === undefined) return "N/A";
+        const directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+        const index = Math.round(degrees / 22.5) % 16;
+        return directions[index];
+    };
+
+    // Function to get weather forecast for a location (simplified - using first forecast as general condition)
+    const getWeatherForLocation = () => {
+        if (forecasts.length > 0) {
+            return forecasts[0].forecast; // Use the first available forecast as general condition
+        }
+        return "Fair";
+    };
+
+    const generalWeather = getWeatherForLocation();
 
     return (
         <MapContainer center={[1.3521, 103.8198]} zoom={11} style={{ height: "500px", width: "100%" }}>
@@ -535,33 +576,41 @@ function WeatherMap() {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
             />
-            {latestReading.data.map((reading) => {
-                const station = stationMap.get(reading.stationId);
-                if (!station) return null;
+            {latestTempReading.data.map((reading) => {
+                const station = tempStationMap.get(reading.stationId);
+                if (!station || reading.value === null) return null;
+
+                const windDirection = windDataMap.get(reading.stationId);
+                const cardinalDirection = getCardinalDirection(windDirection);
 
                 return (
                     <Marker
                         key={reading.stationId}
                         position={[station.location.latitude, station.location.longitude]}
-                    >
-                        <Popup>
-                            <Text fontWeight="bold">{station.name}</Text>
-                            <Text>Temperature: {reading.value?.toFixed(1)}°C</Text>
-                        </Popup>
-                        <Text
-                            position="absolute"
-                            style={{
-                                transform: "translate(-50%, -100%)",
-                                backgroundColor: "white",
-                                padding: "2px 4px",
-                                borderRadius: "4px",
-                                fontSize: "12px",
-                                fontWeight: "bold",
-                            }}
-                        >
-                            {reading.value?.toFixed(1)}°C
-                        </Text>
-                    </Marker>
+                        icon={L.divIcon({
+                            html: `
+                                <div style="
+                                    background: rgba(255, 255, 255, 0.95);
+                                    border: 2px solid #4A90E2;
+                                    border-radius: 8px;
+                                    padding: 4px 6px;
+                                    font-size: 11px;
+                                    font-weight: bold;
+                                    text-align: center;
+                                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                                    min-width: 60px;
+                                    transform: translate(-50%, -100%);
+                                ">
+                                    <div style="font-size: 14px; margin-bottom: 2px;">${getWeatherIcon(generalWeather)}</div>
+                                    <div style="color: #E53E3E; font-size: 12px;">${reading.value.toFixed(1)}°C</div>
+                                    <div style="color: #2D3748; font-size: 10px;">${cardinalDirection}</div>
+                                </div>
+                            `,
+                            className: 'custom-weather-marker',
+                            iconSize: [60, 50],
+                            iconAnchor: [30, 50]
+                        })}
+                    />
                 );
             })}
         </MapContainer>
