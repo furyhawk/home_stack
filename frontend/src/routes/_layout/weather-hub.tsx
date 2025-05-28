@@ -22,7 +22,7 @@ import { useQuery } from "@tanstack/react-query"
 import { createListCollection } from "@ark-ui/react"
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import 'leaflet/dist/leaflet.css';
 
 import { WeatherService } from "@/client/sdk.gen"
 
@@ -163,7 +163,7 @@ function getWeatherIcon(forecast: string): string {
 
 function TwoHourForecast() {
     const [selectedArea, setSelectedArea] = useState<string[]>(["All Areas"])
-    const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid')
+    const [viewMode, setViewMode] = useState<'grid' | 'map'>('map')
 
     const { data, isLoading, error } = useQuery<ApiNestedResponse<TwoHourForecastPayload>>({
         queryKey: ["weather", "two-hour-forecast"],
@@ -336,6 +336,7 @@ function TwoHourForecast() {
                                 attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
                             />
                             <MapCenter center={center} />
+                            <MapInvalidator />
                             {forecastsWithLocation.map((forecast, index) => (
                                 <Marker
                                     key={`${forecast.area}-${index}`}
@@ -640,12 +641,14 @@ function MapInvalidator() {
     const map = useMap();
 
     useEffect(() => {
-        // Small delay to ensure the container is fully visible
-        const timer = setTimeout(() => {
-            map.invalidateSize();
-        }, 100);
-
-        return () => clearTimeout(timer);
+        // Invalidate size after mount and on window resize
+        const timer = setTimeout(() => map.invalidateSize(), 100);
+        const handleResize = () => map.invalidateSize();
+        window.addEventListener('resize', handleResize);
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('resize', handleResize);
+        };
     }, [map]);
 
     return null;
@@ -717,18 +720,18 @@ function WeatherMap() {
     const generalWeather = getWeatherForLocation();
 
     return (
-        <Box height="500px" width="100%" borderRadius="md" overflow="hidden" my={4}>
+        // <Box height="500px" width="100%" borderRadius="md" overflow="hidden" my={4}>
             <MapContainer
                 center={center}
                 zoom={11}
-                style={{ height: "100%", width: "100%" }}
+                style={{ height: "500px", width: "100%" }}
             >
-                <MapInvalidator />
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
                 />
-                <MapCenter center={center} />
+                {/* <MapCenter center={center} /> */}
+                <MapInvalidator />
 
                 {latestTempReading.data.map((reading) => {
                     const station = tempStationMap.get(reading.stationId);
@@ -768,7 +771,7 @@ function WeatherMap() {
                     );
                 })}
             </MapContainer>
-        </Box>
+        // </Box>
     );
 }
 
