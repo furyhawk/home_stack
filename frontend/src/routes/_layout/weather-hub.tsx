@@ -124,6 +124,18 @@ interface WindDirectionPayload {
 // Wrapper type for useQuery data if API responses are nested under a 'data' property
 type ApiNestedResponse<P> = { data?: P };
 
+// Auto center map component
+const MapCenter = ({ center }: { center: [number, number] }) => {
+    const map = useMap();
+    useEffect(() => {
+        map.setView(center, map.getZoom());
+    }, [center, map]);
+    return null;
+};
+
+// Singapore coordinates (centered on the island)
+const center: [number, number] = [1.3521, 103.8198];
+
 export const Route = createFileRoute("/_layout/weather-hub")({
     component: WeatherHub,
 })
@@ -239,7 +251,7 @@ function TwoHourForecast() {
                     <HStack gap={4}>
                         {/* View Mode Toggle */}
                         <HStack>
-                            <Badge 
+                            <Badge
                                 variant={viewMode === 'grid' ? 'solid' : 'outline'}
                                 colorScheme="blue"
                                 cursor="pointer"
@@ -249,7 +261,7 @@ function TwoHourForecast() {
                             >
                                 Grid
                             </Badge>
-                            <Badge 
+                            <Badge
                                 variant={viewMode === 'map' ? 'solid' : 'outline'}
                                 colorScheme="blue"
                                 cursor="pointer"
@@ -260,7 +272,7 @@ function TwoHourForecast() {
                                 Map
                             </Badge>
                         </HStack>
-                        
+
                         <ChakraSelect.Root
                             value={selectedArea}
                             collection={createListCollection({
@@ -315,7 +327,7 @@ function TwoHourForecast() {
                 <Box height="500px" width="100%" borderRadius="md" overflow="hidden" my={4}>
                     {forecastsWithLocation.length > 0 ? (
                         <MapContainer
-                            center={[1.3521, 103.8198]}
+                            center={center}
                             zoom={11}
                             style={{ height: "100%", width: "100%" }}
                         >
@@ -323,6 +335,7 @@ function TwoHourForecast() {
                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                 attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
                             />
+                            <MapCenter center={center} />
                             {forecastsWithLocation.map((forecast, index) => (
                                 <Marker
                                     key={`${forecast.area}-${index}`}
@@ -332,11 +345,11 @@ function TwoHourForecast() {
                             ))}
                         </MapContainer>
                     ) : (
-                        <Flex 
-                            height="500px" 
-                            alignItems="center" 
-                            justifyContent="center" 
-                            bg="gray.50" 
+                        <Flex
+                            height="500px"
+                            alignItems="center"
+                            justifyContent="center"
+                            bg="gray.50"
                             borderRadius="md"
                         >
                             <VStack>
@@ -380,8 +393,8 @@ function AirTemperature() {
 
     // Calculate average temperature
     const validReadings = latestReading.data.filter(reading => reading.value !== null);
-    const avgTemp = validReadings.length > 0 
-        ? validReadings.reduce((sum, reading) => sum + reading.value, 0) / validReadings.length 
+    const avgTemp = validReadings.length > 0
+        ? validReadings.reduce((sum, reading) => sum + reading.value, 0) / validReadings.length
         : 0;
 
     return (
@@ -563,13 +576,13 @@ function WindDirection() {
     // Calculate circular average direction (proper method for wind directions)
     const validReadings = latestReading.data.filter(reading => reading.value !== null);
     let avgDirection = 0;
-    
+
     if (validReadings.length > 0) {
         // Convert degrees to radians, calculate vector average, then back to degrees
         const radians = validReadings.map(reading => (reading.value! * Math.PI) / 180);
         const sinSum = radians.reduce((sum, rad) => sum + Math.sin(rad), 0);
         const cosSum = radians.reduce((sum, rad) => sum + Math.cos(rad), 0);
-        
+
         const avgRadians = Math.atan2(sinSum / validReadings.length, cosSum / validReadings.length);
         avgDirection = Math.round(((avgRadians * 180) / Math.PI + 360) % 360);
     }
@@ -625,16 +638,16 @@ function WindDirection() {
 // Component to handle map invalidation when tab becomes visible
 function MapInvalidator() {
     const map = useMap();
-    
+
     useEffect(() => {
         // Small delay to ensure the container is fully visible
         const timer = setTimeout(() => {
             map.invalidateSize();
         }, 100);
-        
+
         return () => clearTimeout(timer);
     }, [map]);
-    
+
     return null;
 }
 
@@ -704,25 +717,32 @@ function WeatherMap() {
     const generalWeather = getWeatherForLocation();
 
     return (
-        <MapContainer center={[1.3521, 103.8198]} zoom={11} style={{ height: "500px", width: "100%" }}>
-            <MapInvalidator />
-            <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-            />
-            {latestTempReading.data.map((reading) => {
-                const station = tempStationMap.get(reading.stationId);
-                if (!station || reading.value === null) return null;
+        <Box height="500px" width="100%" borderRadius="md" overflow="hidden" my={4}>
+            <MapContainer
+                center={center}
+                zoom={11}
+                style={{ height: "100%", width: "100%" }}
+            >
+                <MapInvalidator />
+                <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+                />
+                <MapCenter center={center} />
 
-                const windDirection = windDataMap.get(reading.stationId);
-                const cardinalDirection = getCardinalDirection(windDirection);
+                {latestTempReading.data.map((reading) => {
+                    const station = tempStationMap.get(reading.stationId);
+                    if (!station || reading.value === null) return null;
 
-                return (
-                    <Marker
-                        key={reading.stationId}
-                        position={[station.location.latitude, station.location.longitude]}
-                        icon={L.divIcon({
-                            html: `
+                    const windDirection = windDataMap.get(reading.stationId);
+                    const cardinalDirection = getCardinalDirection(windDirection);
+
+                    return (
+                        <Marker
+                            key={reading.stationId}
+                            position={[station.location.latitude, station.location.longitude]}
+                            icon={L.divIcon({
+                                html: `
                                 <div style="
                                     background: rgba(255, 255, 255, 0.95);
                                     border: 2px solid #4A90E2;
@@ -740,14 +760,15 @@ function WeatherMap() {
                                     <div style="color: #2D3748; font-size: 10px;">${cardinalDirection}</div>
                                 </div>
                             `,
-                            className: 'custom-weather-marker',
-                            iconSize: [60, 50],
-                            iconAnchor: [30, 50]
-                        })}
-                    />
-                );
-            })}
-        </MapContainer>
+                                className: 'custom-weather-marker',
+                                iconSize: [60, 50],
+                                iconAnchor: [30, 50]
+                            })}
+                        />
+                    );
+                })}
+            </MapContainer>
+        </Box>
     );
 }
 
