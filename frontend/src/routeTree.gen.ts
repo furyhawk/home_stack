@@ -17,7 +17,6 @@ import { Route as RecoverPasswordImport } from './routes/recover-password'
 import { Route as LoginImport } from './routes/login'
 import { Route as LayoutImport } from './routes/_layout'
 import { Route as LayoutIndexImport } from './routes/_layout/index'
-import { Route as LayoutWeatherImport } from './routes/_layout/weather'
 import { Route as LayoutSettingsImport } from './routes/_layout/settings'
 import { Route as LayoutItemsImport } from './routes/_layout/items'
 import { Route as LayoutAdminImport } from './routes/_layout/admin'
@@ -56,12 +55,6 @@ const LayoutRoute = LayoutImport.update({
 const LayoutIndexRoute = LayoutIndexImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => LayoutRoute,
-} as any)
-
-const LayoutWeatherRoute = LayoutWeatherImport.update({
-  id: '/weather',
-  path: '/weather',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -143,13 +136,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutSettingsImport
       parentRoute: typeof LayoutImport
     }
-    '/_layout/weather': {
-      id: '/_layout/weather'
-      path: '/weather'
-      fullPath: '/weather'
-      preLoaderRoute: typeof LayoutWeatherImport
-      parentRoute: typeof LayoutImport
-    }
     '/_layout/': {
       id: '/_layout/'
       path: '/'
@@ -166,7 +152,6 @@ interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
-  LayoutWeatherRoute: typeof LayoutWeatherRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
 
@@ -174,7 +159,6 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutItemsRoute: LayoutItemsRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
-  LayoutWeatherRoute: LayoutWeatherRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }
 
@@ -190,7 +174,6 @@ export interface FileRoutesByFullPath {
   '/admin': typeof LayoutAdminRoute
   '/items': typeof LayoutItemsRoute
   '/settings': typeof LayoutSettingsRoute
-  '/weather': typeof LayoutWeatherRoute
   '/': typeof LayoutIndexRoute
 }
 
@@ -202,7 +185,6 @@ export interface FileRoutesByTo {
   '/admin': typeof LayoutAdminRoute
   '/items': typeof LayoutItemsRoute
   '/settings': typeof LayoutSettingsRoute
-  '/weather': typeof LayoutWeatherRoute
   '/': typeof LayoutIndexRoute
 }
 
@@ -216,7 +198,6 @@ export interface FileRoutesById {
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/items': typeof LayoutItemsRoute
   '/_layout/settings': typeof LayoutSettingsRoute
-  '/_layout/weather': typeof LayoutWeatherRoute
   '/_layout/': typeof LayoutIndexRoute
 }
 
@@ -231,7 +212,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/items'
     | '/settings'
-    | '/weather'
     | '/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -242,7 +222,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/items'
     | '/settings'
-    | '/weather'
     | '/'
   id:
     | '__root__'
@@ -254,7 +233,6 @@ export interface FileRouteTypes {
     | '/_layout/admin'
     | '/_layout/items'
     | '/_layout/settings'
-    | '/_layout/weather'
     | '/_layout/'
   fileRoutesById: FileRoutesById
 }
@@ -298,7 +276,6 @@ export const routeTree = rootRoute
         "/_layout/admin",
         "/_layout/items",
         "/_layout/settings",
-        "/_layout/weather",
         "/_layout/"
       ]
     },
@@ -324,10 +301,6 @@ export const routeTree = rootRoute
     },
     "/_layout/settings": {
       "filePath": "_layout/settings.tsx",
-      "parent": "/_layout"
-    },
-    "/_layout/weather": {
-      "filePath": "_layout/weather.tsx",
       "parent": "/_layout"
     },
     "/_layout/": {
