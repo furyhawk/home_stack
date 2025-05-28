@@ -91,14 +91,31 @@ interface FourDayOutlookPayload {
     records?: FourDayOutlookRecord[];
 }
 
-interface WindReading {
+interface WindStation {
     id: string;
+    deviceId: string;
+    name: string;
+    location: {
+        latitude: number;
+        longitude: number;
+    };
+}
+
+interface WindDataPoint {
+    stationId: string;
     value: number | null;
+}
+
+interface WindReading {
     timestamp: string;
+    data: WindDataPoint[];
 }
 
 interface WindDirectionPayload {
+    stations?: WindStation[];
     readings?: WindReading[];
+    readingType?: string;
+    readingUnit?: string;
 }
 
 // Wrapper type for useQuery data if API responses are nested under a 'data' property
@@ -408,16 +425,34 @@ function WindDirection() {
     if (isLoading) return <Spinner />
     if (error || !data?.data) return <Text color="red.500">Error loading wind direction data</Text>
 
-    if (!Array.isArray(data.data.readings) || data.data.readings.length === 0) {
+    const { stations = [], readings = [] } = data.data;
+
+    if (stations.length === 0 || readings.length === 0) {
         return <Text>No wind direction data available</Text>
     }
 
-    const readings = data.data.readings
+    // Get the latest reading
+    const latestReading = readings[0];
+    if (!latestReading || !latestReading.data) {
+        return <Text>No wind direction data available</Text>
+    }
 
-    // Calculate average direction
-    const avgDirection = Math.round(
-        readings.reduce((sum, reading) => sum + (reading.value ?? 0), 0) / readings.length
-    )
+    // Create a map of station IDs to station names
+    const stationMap = new Map(stations.map(station => [station.id, station.name]));
+
+    // Calculate circular average direction (proper method for wind directions)
+    const validReadings = latestReading.data.filter(reading => reading.value !== null);
+    let avgDirection = 0;
+    
+    if (validReadings.length > 0) {
+        // Convert degrees to radians, calculate vector average, then back to degrees
+        const radians = validReadings.map(reading => (reading.value! * Math.PI) / 180);
+        const sinSum = radians.reduce((sum, rad) => sum + Math.sin(rad), 0);
+        const cosSum = radians.reduce((sum, rad) => sum + Math.cos(rad), 0);
+        
+        const avgRadians = Math.atan2(sinSum / validReadings.length, cosSum / validReadings.length);
+        avgDirection = Math.round(((avgRadians * 180) / Math.PI + 360) % 360);
+    }
 
     // Convert direction to cardinal points
     const getCardinalDirection = (degrees: number) => {
@@ -428,7 +463,7 @@ function WindDirection() {
 
     return (
         <Box>
-            <VStack align="stretch" gap={4} mb={6}> {/* Changed spacing to gap */}
+            <VStack align="stretch" gap={4} mb={6}>
                 <ChakraCard.Root>
                     <ChakraCard.Body>
                         <Heading size="md" mb={2}>Average Wind Direction</Heading>
@@ -436,24 +471,29 @@ function WindDirection() {
                             <Text fontSize="3xl" fontWeight="bold">{avgDirection}°</Text>
                             <Text fontSize="2xl" ml={2}>({getCardinalDirection(avgDirection)})</Text>
                         </HStack>
-                        <Text fontSize="sm" color="gray.500">Based on {readings.length} station readings</Text>
+                        <Text fontSize="sm" color="gray.500">Based on {validReadings.length} station readings</Text>
+                        <Text fontSize="xs" color="gray.400" mt={1}>
+                            Last updated: {new Date(latestReading.timestamp).toLocaleString()}
+                        </Text>
                     </ChakraCard.Body>
                 </ChakraCard.Root>
             </VStack>
 
             <Heading size="md" mb={4}>Wind Direction by Station</Heading>
-            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={4}> {/* Changed spacing to gap */}
-                {readings.slice(0, 9).map((reading: WindReading) => (
-                    <ChakraCard.Root key={reading.id || Math.random().toString()}>
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={4}>
+                {latestReading.data.slice(0, 9).map((reading: WindDataPoint) => (
+                    <ChakraCard.Root key={reading.stationId}>
                         <ChakraCard.Body>
-                            <Text fontWeight="bold">{reading.id}</Text>
+                            <Text fontWeight="bold" fontSize="sm">
+                                {stationMap.get(reading.stationId) || reading.stationId}
+                            </Text>
+                            <Text fontSize="xs" color="gray.500" mb={1}>
+                                {reading.stationId}
+                            </Text>
                             <HStack>
                                 <Text fontSize="2xl">{reading.value ?? 0}°</Text>
                                 <Text>({getCardinalDirection(reading.value ?? 0)})</Text>
                             </HStack>
-                            <Text fontSize="xs" color="gray.500">
-                                Last updated: {new Date(reading.timestamp).toLocaleTimeString()}
-                            </Text>
                         </ChakraCard.Body>
                     </ChakraCard.Root>
                 ))}
