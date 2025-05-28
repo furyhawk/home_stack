@@ -20,6 +20,8 @@ import {
 import { createFileRoute } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import { createListCollection } from "@ark-ui/react"
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
 import { WeatherService } from "@/client/sdk.gen"
 
@@ -502,6 +504,57 @@ function WindDirection() {
     )
 }
 
+function WeatherMap() {
+    const { data, isLoading, error } = useQuery<ApiNestedResponse<AirTemperaturePayload>>({
+        queryKey: ["weather", "air-temperature"],
+        queryFn: () => WeatherService.getAirTemperature() as Promise<ApiNestedResponse<AirTemperaturePayload>>,
+        refetchInterval: 1000 * 60 * 30, // Refetch every 30 minutes
+    });
+
+    if (isLoading) return <Spinner />;
+    if (error || !data?.data) return <Text color="red.500">Error loading map data</Text>;
+
+    const { stations = [], readings = [] } = data.data;
+
+    if (stations.length === 0 || readings.length === 0) {
+        return <Text>No map data available</Text>;
+    }
+
+    // Get the latest reading
+    const latestReading = readings[0];
+    if (!latestReading || !latestReading.data) {
+        return <Text>No map data available</Text>;
+    }
+
+    // Create a map of station IDs to station details
+    const stationMap = new Map(stations.map(station => [station.id, station]));
+
+    return (
+        <MapContainer center={[1.3521, 103.8198]} zoom={11} style={{ height: "500px", width: "100%" }}>
+            <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+            />
+            {latestReading.data.map((reading) => {
+                const station = stationMap.get(reading.stationId);
+                if (!station) return null;
+
+                return (
+                    <Marker
+                        key={reading.stationId}
+                        position={[station.location.latitude, station.location.longitude]}
+                    >
+                        <Popup>
+                            <Text fontWeight="bold">{station.name}</Text>
+                            <Text>Temperature: {reading.value?.toFixed(1)}°C</Text>
+                        </Popup>
+                    </Marker>
+                );
+            })}
+        </MapContainer>
+    );
+}
+
 // Define tab values for namespaced Tabs
 const tabValues = {
     twoHour: "twoHourForecast",
@@ -509,6 +562,7 @@ const tabValues = {
     fourDay: "fourDayOutlook",
     stats: "weatherStatistics",
     windDir: "windDirection",
+    weatherMap: "weatherMap",
 }
 
 function WeatherHub() {
@@ -529,6 +583,7 @@ function WeatherHub() {
                     <ChakraTabs.Trigger value={tabValues.fourDay}>4-Day Outlook</ChakraTabs.Trigger>
                     <ChakraTabs.Trigger value={tabValues.stats}>Statistics</ChakraTabs.Trigger>
                     <ChakraTabs.Trigger value={tabValues.windDir}>Wind Direction</ChakraTabs.Trigger>
+                    <ChakraTabs.Trigger value={tabValues.weatherMap}>Weather Map</ChakraTabs.Trigger>
                 </ChakraTabs.List>
 
                 <ChakraTabs.ContentGroup>
@@ -546,6 +601,9 @@ function WeatherHub() {
                     </ChakraTabs.Content>
                     <ChakraTabs.Content value={tabValues.windDir}>
                         <WindDirection />
+                    </ChakraTabs.Content>
+                    <ChakraTabs.Content value={tabValues.weatherMap}>
+                        <WeatherMap />
                     </ChakraTabs.Content>
                 </ChakraTabs.ContentGroup>
             </ChakraTabs.Root>
