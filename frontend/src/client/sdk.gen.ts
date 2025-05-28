@@ -48,6 +48,18 @@ import type {
   UtilsHealthCheckResponse,
   WeatherGetTwoHourForecastData,
   WeatherGetTwoHourForecastResponse,
+  WeatherGetAirTemperatureData,
+  WeatherGetAirTemperatureResponse,
+  WeatherGetWindDirectionData,
+  WeatherGetWindDirectionResponse,
+  WeatherGetLightningData,
+  WeatherGetLightningResponse,
+  WeatherGetWbgtData,
+  WeatherGetWbgtResponse,
+  WeatherGetTwentyFourHourForecastData,
+  WeatherGetTwentyFourHourForecastResponse,
+  WeatherGetFourDayOutlookData,
+  WeatherGetFourDayOutlookResponse,
 } from "./types.gen"
 
 export class ItemsService {
@@ -569,6 +581,173 @@ export class WeatherService {
     return __request(OpenAPI, {
       method: "GET",
       url: "/api/v1/weather/two-hour-forecast",
+      query: {
+        date: data.date,
+        pagination_token: data.paginationToken,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Get Air Temperature
+   * Get air temperature readings across Singapore
+   *
+   * - Has per-minute readings from NEA
+   * - Unit of measure for readings is °C
+   * @param data The data for the request.
+   * @param data.date Format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS (SGT). Example: 2024-07-16 or 2024-07-16T23:59:00
+   * @param data.paginationToken Pagination token for retrieving subsequent data pages
+   * @returns AirTemperatureResponse Successful Response
+   * @throws ApiError
+   */
+  public static getAirTemperature(
+    data: WeatherGetAirTemperatureData = {},
+  ): CancelablePromise<WeatherGetAirTemperatureResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/weather/air-temperature",
+      query: {
+        date: data.date,
+        pagination_token: data.paginationToken,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Get Wind Direction
+   * Get wind direction readings across Singapore
+   *
+   * - Has per-minute readings from NEA
+   * - Unit of measure for readings is °
+   * @param data The data for the request.
+   * @param data.date SGT date for which to retrieve data (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)
+   * @param data.paginationToken Pagination token for retrieving subsequent data pages
+   * @returns WindDirectionResponse Successful Response
+   * @throws ApiError
+   */
+  public static getWindDirection(
+    data: WeatherGetWindDirectionData = {},
+  ): CancelablePromise<WeatherGetWindDirectionResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/weather/wind-direction",
+      query: {
+        date: data.date,
+        pagination_token: data.paginationToken,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Get Lightning
+   * Retrieve the latest lightning observation
+   *
+   * - Updated multiple times throughout the day
+   * @param data The data for the request.
+   * @param data.date SGT date (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS). Example: 2025-01-16 or 2025-01-16T23:59:00
+   * @param data.paginationToken Pagination token for retrieving subsequent data pages
+   * @returns LightningResponse Successful Response
+   * @throws ApiError
+   */
+  public static getLightning(
+    data: WeatherGetLightningData = {},
+  ): CancelablePromise<WeatherGetLightningResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/weather/lightning",
+      query: {
+        date: data.date,
+        pagination_token: data.paginationToken,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Get Wbgt
+   * Retrieve the latest WBGT (Wet Bulb Globe Temperature) data for accurate heat stress assessment
+   *
+   * - Updated multiple times throughout the day
+   * - Unit of measure for readings is °C
+   * @param data The data for the request.
+   * @param data.date SGT date (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS). Example: 2025-01-16 or 2025-01-16T23:59:00
+   * @param data.paginationToken Pagination token for retrieving subsequent data pages
+   * @returns WBGTResponse Successful Response
+   * @throws ApiError
+   */
+  public static getWbgt(
+    data: WeatherGetWbgtData = {},
+  ): CancelablePromise<WeatherGetWbgtResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/weather/wbgt",
+      query: {
+        date: data.date,
+        pagination_token: data.paginationToken,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Get Twenty Four Hour Forecast
+   * Retrieve the latest 24 hour weather forecast
+   *
+   * - Updated multiple times throughout the day
+   * - Provides forecasts for different areas of Singapore
+   * @param data The data for the request.
+   * @param data.date SGT date (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS). Example: 2024-07-16 or 2024-07-16T23:59:00
+   * @param data.paginationToken Pagination token for retrieving subsequent data pages
+   * @returns TwentyFourHourForecastResponse Successful Response
+   * @throws ApiError
+   */
+  public static getTwentyFourHourForecast(
+    data: WeatherGetTwentyFourHourForecastData = {},
+  ): CancelablePromise<WeatherGetTwentyFourHourForecastResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/weather/twenty-four-hour-forecast",
+      query: {
+        date: data.date,
+        pagination_token: data.paginationToken,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Get Four Day Outlook
+   * Retrieve the latest 4 day weather forecast
+   *
+   * - Updated twice a day from NEA
+   * - The forecast is for the next 4 days
+   * @param data The data for the request.
+   * @param data.date SGT date for which to retrieve data (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)
+   * @param data.paginationToken Pagination token for retrieving subsequent data pages
+   * @returns FourDayForecastResponse Successful Response
+   * @throws ApiError
+   */
+  public static getFourDayOutlook(
+    data: WeatherGetFourDayOutlookData = {},
+  ): CancelablePromise<WeatherGetFourDayOutlookResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/weather/four-day-outlook",
       query: {
         date: data.date,
         pagination_token: data.paginationToken,
