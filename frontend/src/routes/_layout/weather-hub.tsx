@@ -1,5 +1,5 @@
 // filepath: /home/user/projects/home_stack/frontend/src/routes/_layout/weather-hub.tsx
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
     Box,
     Container,
@@ -20,7 +20,7 @@ import {
 import { createFileRoute } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import { createListCollection } from "@ark-ui/react"
-import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -622,6 +622,22 @@ function WindDirection() {
     )
 }
 
+// Component to handle map invalidation when tab becomes visible
+function MapInvalidator() {
+    const map = useMap();
+    
+    useEffect(() => {
+        // Small delay to ensure the container is fully visible
+        const timer = setTimeout(() => {
+            map.invalidateSize();
+        }, 100);
+        
+        return () => clearTimeout(timer);
+    }, [map]);
+    
+    return null;
+}
+
 function WeatherMap() {
     // Fetch air temperature data
     const { data: tempData, isLoading: tempLoading, error: tempError } = useQuery<ApiNestedResponse<AirTemperaturePayload>>({
@@ -689,6 +705,7 @@ function WeatherMap() {
 
     return (
         <MapContainer center={[1.3521, 103.8198]} zoom={11} style={{ height: "500px", width: "100%" }}>
+            <MapInvalidator />
             <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
