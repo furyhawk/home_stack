@@ -1,0 +1,31 @@
+/* Ensure marker icons are properly displayed */
+.custom-weather-marker {
+  background: none !important;
+  border: none !important;
+}
+
+/* Remove default leaflet icon shadows */
+.leaflet-shadow-pane {
+  display: none;
+}
+
+/* Style popup better */
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  padding: 0;
+}
+
+.leaflet-popup-content {
+  margin: 8px;
+  line-height: 1.5;
+}
+
+/* Fix marker icon positions */
+.leaflet-marker-icon {
+  background: none !important;
+}
+
+/* Fix map container z-index issues */
+.leaflet-container {
+  z-index: 1;
+}

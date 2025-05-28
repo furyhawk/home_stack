@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Spinner, Text, Box, VStack, HStack, Heading } from '@chakra-ui/react';
-import { Card as ChakraCard } from '@chakra-ui/react';
+import { Card } from '@chakra-ui/react';
 import { WeatherService } from '@/client/sdk.gen';
 import { getWeatherIcon } from './weatherUtils';
 
@@ -36,8 +36,8 @@ const WeatherStatistics: React.FC = () => {
 
   return (
     <Box>
-      <ChakraCard mb={6}>
-        <ChakraCard.Body>
+      <Card.Root mb={6}>
+        <Card.Body>
           <Heading size="md" mb={4}>Weather Overview</Heading>
           <Text fontSize="lg">Total Areas: <Text as="span" fontWeight="bold">{totalAreas}</Text></Text>
           {sortedForecasts.length > 0 && (
@@ -45,13 +45,13 @@ const WeatherStatistics: React.FC = () => {
               Most Common: <Text as="span">{getWeatherIcon(sortedForecasts[0].forecast)} {sortedForecasts[0].forecast}</Text> ({sortedForecasts[0].count} areas)
             </Text>
           )}
-        </ChakraCard.Body>
-      </ChakraCard>
+        </Card.Body>
+      </Card.Root>
       <Heading size="md" mb={4}>Weather Conditions Distribution</Heading>
-      <VStack align="stretch" spacing={3}>
+      <VStack align="stretch" gap={3}>
         {sortedForecasts.map(item => (
-          <ChakraCard key={item.forecast} mb={2}>
-            <ChakraCard.Body>
+          <Card.Root key={item.forecast} mb={2}>
+            <Card.Body>
               <HStack justify="space-between">
                 <HStack>
                   <Text fontSize="xl">{getWeatherIcon(item.forecast)}</Text>
@@ -59,8 +59,8 @@ const WeatherStatistics: React.FC = () => {
                 </HStack>
                 <Text>{item.count} areas ({(item.count / totalAreas * 100).toFixed(1)}%)</Text>
               </HStack>
-            </ChakraCard.Body>
-          </ChakraCard>
+            </Card.Body>
+          </Card.Root>
         ))}
       </VStack>
     </Box>
