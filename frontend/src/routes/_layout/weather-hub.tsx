@@ -1,4 +1,3 @@
-import React from 'react';
 import { Container, Box, Heading, Text, Separator, Tabs as ChakraTabs } from '@chakra-ui/react';
 import { createFileRoute } from '@tanstack/react-router';
 
