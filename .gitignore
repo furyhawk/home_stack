@@ -5,3 +5,7 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 frontend/.env
+.mypy_cache/
+# Ignore Python cache files
+__pycache__/
+unsloth_compiled_cache/
