@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+  ollama:
+    build: .
+    ports:
+      - "11434:11434" # Map host port 11434 to container port 11434 (Ollama default)
+    volumes:
+      - ./models:/models # Mount a local directory for models
+      - ollama_data:/usr/share/ollama/.ollama # Persistent storage for Ollama data
+    container_name: ollama-server
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    restart: unless-stopped
+    # Uncomment the following lines if you have NVIDIA GPU support
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+volumes:
+  ollama_data:

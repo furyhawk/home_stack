@@ -1,0 +1,2 @@
+podman build -t furyhawk/llama.cpp:full-cuda --target full -f .devops/cuda.Dockerfile .
+podman run --name llamacpp-server --gpus all -v ~/models:/models localhost/furyhawk/llama.cpp:full-cuda -b -m /models/DeepSeek-R1-0528-Qwen3-8B-UD-Q4_K_XL.gguf --port 8000 --host 0.0.0.0 -n 512 --n-gpu-layers 1
