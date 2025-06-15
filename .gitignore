@@ -10,3 +10,4 @@ frontend/.env
 __pycache__/
 unsloth_compiled_cache/
 notebooks/lora_model/
+ai_stack/llamacpp/models/
