@@ -53,3 +53,10 @@ ipywidgets
 termcolor
 unsloth
 jinja2
+llama-cpp-python
+langchain
+langchain-community
+sentence-transformers
+chromadb
+pypdf
+

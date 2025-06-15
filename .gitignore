@@ -11,3 +11,5 @@ __pycache__/
 unsloth_compiled_cache/
 notebooks/lora_model/
 ai_stack/llamacpp/models/
+notebooks/chroma_db/
+notebooks/llama-2-7b-chat.Q4_K_M.gguf
