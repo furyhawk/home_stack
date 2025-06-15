@@ -12,7 +12,7 @@ include $(ENV_FILE)
 export
 
 # Targets
-.PHONY: up down restart logs build reset network pull-deepseek-model ollama-up ollama-down ollama-logs llamacpp-up llamacpp-down llamacpp-logs llamacpp-build pull-deepseek-llamacpp llamacpp-gpu ai-launcher
+.PHONY: up down restart logs build reset network pull-deepseek-model ollama-up ollama-down ollama-logs llamacpp-up llamacpp-down llamacpp-logs llamacpp-build llamacpp-build-host pull-deepseek-llamacpp llamacpp-gpu ai-launcher
 
 network:
 	@podman network exists traefik-public || podman network create traefik-public
@@ -103,7 +103,8 @@ help:
 	@echo "  make setup-ollama         Start Ollama and automatically pull DeepSeek model"
 	@echo ""
 	@echo "LlamaCPP-specific targets:"
-	@echo "  make llamacpp-build       Build LlamaCPP container with no cache"
+	@echo "  make llamacpp-build       Build LlamaCPP container with no cache (using slirp4netns)"
+	@echo "  make llamacpp-build-host  Build LlamaCPP container with host networking (alternative)"
 	@echo "  make llamacpp-up          Start only the LlamaCPP container"
 	@echo "  make llamacpp-down        Stop only the LlamaCPP container"
 	@echo "  make llamacpp-logs        View LlamaCPP container logs"
@@ -158,8 +159,12 @@ setup-ollama: ollama-up
 
 # LlamaCPP-specific targets
 llamacpp-build:
-	cd ai_stack/llamacpp && DOCKER_BUILDKIT=0 podman compose build --no-cache
+	cd ai_stack/llamacpp && DOCKER_BUILDKIT=0 CONTAINERS_NETNS=slirp4netns podman compose build --no-cache
 	@echo "LlamaCPP container built with no cache. Use 'make llamacpp-up' to start it."
+
+llamacpp-build-host:
+	cd ai_stack/llamacpp && DOCKER_BUILDKIT=0 podman build --network=host --no-cache -t localhost/llama-cpp-server:latest .
+	@echo "LlamaCPP container built with host networking. Use 'make llamacpp-up' to start it."
 
 llamacpp-up:
 	cd ai_stack/llamacpp && podman compose up -d
