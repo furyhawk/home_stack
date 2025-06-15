@@ -165,7 +165,7 @@ verify_model() {
 # Check if LlamaCPP container is running
 check_llamacpp() {
     log_info "Checking if LlamaCPP container is running..."
-    if docker ps | grep -q "${CONTAINER_NAME}"; then
+    if podman ps | grep -q "${CONTAINER_NAME}"; then
         log_info "LlamaCPP container is running"
         
         # Test if server is responding
