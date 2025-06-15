@@ -2,6 +2,7 @@ version: '3.8'
 services:
   ollama:
     build: .
+    image: localhost/ollama-server:latest
     ports:
       - "11434:11434" # Map host port 11434 to container port 11434 (Ollama default)
     volumes:

@@ -7,7 +7,7 @@ set -e
 
 # Configuration
 MODEL_REPO="unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF"
-MODEL_FILE="DeepSeek-R1-0528-Qwen3-8B-Q4_K_XL.gguf"
+MODEL_FILE="DeepSeek-R1-0528-Qwen3-8B-UD-Q4_K_XL.gguf"
 OLLAMA_HOST="http://localhost:11434"
 MODEL_NAME="deepseek-r1-qwen3-8b"
 MODELS_DIR="./ai_stack/ollama/models"

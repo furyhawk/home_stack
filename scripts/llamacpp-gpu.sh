@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-MODEL_FILE="DeepSeek-R1-0528-Qwen3-8B-Q4_K_XL.gguf"
+MODEL_FILE="DeepSeek-R1-0528-Qwen3-8B-UD-Q4_K_XL.gguf"
 MODELS_DIR="./ai_stack/llamacpp/models"
 CONTAINER_NAME="llama-cpp-server-gpu"
 HOST_PORT="8080"

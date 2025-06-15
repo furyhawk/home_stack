@@ -173,7 +173,7 @@ ls -la ai_stack/llamacpp/models/
 # Test with minimal configuration
 docker run --rm -v $(pwd)/ai_stack/llamacpp/models:/models \
   llamacpp /llama.cpp/llama-server \
-  --model /models/DeepSeek-R1-0528-Qwen3-8B-Q4_K_XL.gguf \
+  --model /models/DeepSeek-R1-0528-Qwen3-8B-UD-Q4_K_XL.gguf \
   --host 0.0.0.0 --port 8080 --ctx-size 2048
 ```
 

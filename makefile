@@ -12,7 +12,7 @@ include $(ENV_FILE)
 export
 
 # Targets
-.PHONY: up down restart logs build reset network pull-deepseek-model ollama-up ollama-down ollama-logs llamacpp-up llamacpp-down llamacpp-logs pull-deepseek-llamacpp llamacpp-gpu ai-launcher
+.PHONY: up down restart logs build reset network pull-deepseek-model ollama-up ollama-down ollama-logs llamacpp-up llamacpp-down llamacpp-logs llamacpp-build pull-deepseek-llamacpp llamacpp-gpu ai-launcher
 
 network:
 	@podman network exists traefik-public || podman network create traefik-public
@@ -103,6 +103,7 @@ help:
 	@echo "  make setup-ollama         Start Ollama and automatically pull DeepSeek model"
 	@echo ""
 	@echo "LlamaCPP-specific targets:"
+	@echo "  make llamacpp-build       Build LlamaCPP container with no cache"
 	@echo "  make llamacpp-up          Start only the LlamaCPP container"
 	@echo "  make llamacpp-down        Stop only the LlamaCPP container"
 	@echo "  make llamacpp-logs        View LlamaCPP container logs"
@@ -156,6 +157,10 @@ setup-ollama: ollama-up
 	@$(MAKE) pull-deepseek-model
 
 # LlamaCPP-specific targets
+llamacpp-build:
+	cd ai_stack/llamacpp && DOCKER_BUILDKIT=0 podman compose build --no-cache
+	@echo "LlamaCPP container built with no cache. Use 'make llamacpp-up' to start it."
+
 llamacpp-up:
 	cd ai_stack/llamacpp && podman compose up -d
 	@echo "LlamaCPP container started. Use 'make pull-deepseek-llamacpp' to download the DeepSeek model."
