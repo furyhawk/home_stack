@@ -38,6 +38,27 @@ create_models_dir() {
     fi
 }
 
+# Install huggingface-hub using the best available package manager
+install_huggingface_hub() {
+    if command -v uv &> /dev/null; then
+        log_info "Installing huggingface-hub using uv..."
+        uv pip install huggingface-hub
+    elif command -v python3 &> /dev/null && python3 -m pip --version &> /dev/null; then
+        log_info "Installing huggingface-hub using python3 -m pip..."
+        python3 -m pip install --user huggingface-hub
+    elif command -v pip3 &> /dev/null; then
+        log_info "Installing huggingface-hub using pip3..."
+        pip3 install --user huggingface-hub
+    elif command -v pip &> /dev/null; then
+        log_info "Installing huggingface-hub using pip..."
+        pip install --user huggingface-hub
+    else
+        log_error "No Python package manager found (uv, python3 -m pip, pip3, or pip)"
+        log_error "Please install huggingface-hub manually: pip install huggingface-hub"
+        exit 1
+    fi
+}
+
 # Download model from Hugging Face
 download_model() {
     log_info "Downloading model from Hugging Face..."
@@ -45,7 +66,7 @@ download_model() {
     # Check if huggingface-hub is installed
     if ! command -v huggingface-cli &> /dev/null; then
         log_warn "huggingface-cli not found. Installing huggingface-hub..."
-        pip install huggingface-hub
+        install_huggingface_hub
     fi
     
     # Download the specific GGUF file
