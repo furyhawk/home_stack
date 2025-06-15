@@ -42,8 +42,22 @@ create_models_dir() {
 install_huggingface_hub() {
     if command -v uv &> /dev/null; then
         log_info "Installing huggingface-hub using uv..."
-        uv pip install huggingface-hub
-    elif command -v python3 &> /dev/null && python3 -m pip --version &> /dev/null; then
+        # Try to install with --system flag for uv
+        uv pip install --system huggingface-hub || {
+            log_warn "uv system install failed, trying with user install..."
+            uv pip install --user huggingface-hub || {
+                log_warn "uv install failed, falling back to other methods..."
+                install_with_fallback
+            }
+        }
+    else
+        install_with_fallback
+    fi
+}
+
+# Fallback installation method
+install_with_fallback() {
+    if command -v python3 &> /dev/null && python3 -m pip --version &> /dev/null; then
         log_info "Installing huggingface-hub using python3 -m pip..."
         python3 -m pip install --user huggingface-hub
     elif command -v pip3 &> /dev/null; then
@@ -54,7 +68,10 @@ install_huggingface_hub() {
         pip install --user huggingface-hub
     else
         log_error "No Python package manager found (uv, python3 -m pip, pip3, or pip)"
-        log_error "Please install huggingface-hub manually: pip install huggingface-hub"
+        log_error "Please install huggingface-hub manually with one of these commands:"
+        log_error "  uv pip install --system huggingface-hub"
+        log_error "  python3 -m pip install --user huggingface-hub"
+        log_error "  pip3 install --user huggingface-hub"
         exit 1
     fi
 }
