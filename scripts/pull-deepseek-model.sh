@@ -77,7 +77,7 @@ create_modelfile() {
     log_info "Creating Modelfile at ${modelfile_path}"
     
     cat > "${modelfile_path}" << EOF
-FROM ./${MODEL_FILE}
+FROM /models/${MODEL_FILE}
 
 TEMPLATE """{{ if .System }}<|im_start|>system
 {{ .System }}<|im_end|>
@@ -106,14 +106,9 @@ EOF
 load_model() {
     log_info "Loading model into Ollama..."
     
-    # Change to models directory for relative path in Modelfile
-    cd "${MODELS_DIR}"
-    
-    # Create the model in Ollama
-    podman exec ollama-server ollama create "${MODEL_NAME}" -f "Modelfile.${MODEL_NAME}"
-    
-    # Go back to original directory
-    cd - > /dev/null
+    # The model files are already mounted in /models/ directory in the container
+    # Just create the model directly using the mounted Modelfile
+    podman exec ollama-server ollama create "${MODEL_NAME}" -f "/models/Modelfile.${MODEL_NAME}"
     
     log_info "Model '${MODEL_NAME}' loaded successfully into Ollama"
 }
