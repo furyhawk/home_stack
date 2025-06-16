@@ -110,7 +110,7 @@ load_model() {
     cd "${MODELS_DIR}"
     
     # Create the model in Ollama
-    docker exec ollama-server ollama create "${MODEL_NAME}" -f "Modelfile.${MODEL_NAME}"
+    podman exec ollama-server ollama create "${MODEL_NAME}" -f "Modelfile.${MODEL_NAME}"
     
     # Go back to original directory
     cd - > /dev/null
@@ -122,12 +122,12 @@ load_model() {
 verify_model() {
     log_info "Verifying model is available in Ollama..."
     
-    if docker exec ollama-server ollama list | grep -q "${MODEL_NAME}"; then
+    if podman exec ollama-server ollama list | grep -q "${MODEL_NAME}"; then
         log_info "✅ Model '${MODEL_NAME}' is available in Ollama"
         
         # Show model details
         log_info "Model details:"
-        docker exec ollama-server ollama list | grep "${MODEL_NAME}" || true
+        podman exec ollama-server ollama list | grep "${MODEL_NAME}" || true
         
         log_info "You can now use the model with: ollama run ${MODEL_NAME}"
     else
@@ -144,7 +144,7 @@ test_model() {
     echo "Prompt: 'Hello, can you introduce yourself?'"
     echo "Response:"
     
-    docker exec ollama-server ollama run "${MODEL_NAME}" "Hello, can you introduce yourself?" || {
+    podman exec ollama-server ollama run "${MODEL_NAME}" "Hello, can you introduce yourself?" || {
         log_warn "Model test failed, but model is loaded. You can test it manually."
     }
 }
@@ -182,7 +182,7 @@ main() {
     fi
     
     log_info "✅ DeepSeek-R1 model setup completed successfully!"
-    log_info "You can now use the model with: docker exec ollama-server ollama run ${MODEL_NAME}"
+    log_info "You can now use the model with: podman exec ollama-server ollama run ${MODEL_NAME}"
     log_info "Or via API at: ${OLLAMA_HOST}/api/generate"
 }
 
