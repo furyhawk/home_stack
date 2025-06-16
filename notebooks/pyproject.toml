@@ -69,3 +69,8 @@ dependencies = [
     "xformers>=0.0.30",
     "xgrammar>=0.1.19 ; platform_machine == 'aarch64' or platform_machine == 'x86_64'",
 ]
+
+[tool.uv.workspace]
+members = [
+    "pydantic_ai",
+]
