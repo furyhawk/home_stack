@@ -130,9 +130,9 @@ async def run_as_cli(answer: str | None):
 
     if snapshot := await persistence.load_next():
         state = snapshot.state
-        assert (
-            answer is not None
-        ), 'answer required, usage "uv run -m pydantic_ai_examples.question_graph cli <answer>"'
+        assert answer is not None, (
+            'answer required, usage "uv run -m pydantic_ai_examples.question_graph cli <answer>"'
+        )
         node = Evaluate(answer)
     else:
         state = QuestionState()
