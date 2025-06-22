@@ -128,6 +128,9 @@ async def run_as_cli(answer: str | None):
     persistence = FileStatePersistence(Path("question_graph.json"))
     persistence.set_graph_types(question_graph)
 
+    # Add type annotation for node
+    node: BaseNode[QuestionState, None, str] | End[str]
+
     if snapshot := await persistence.load_next():
         state = snapshot.state
         assert answer is not None, (
