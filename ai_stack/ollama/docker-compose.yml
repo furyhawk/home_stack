@@ -31,5 +31,24 @@ services:
       - ./postgres-data:/var/lib/postgresql/data
     restart: unless-stopped
 
+  speaches:
+    image: ghcr.io/speaches-ai/speaches:latest-cpu
+    container_name: speaches-server
+    volumes:
+      - hf-hub-cache:/home/ubuntu/.cache/huggingface/hub
+    ports:
+      - "8900:8000"
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       # WARN: requires Docker Compose 2.24.2
+    #       # https://docs.docker.com/reference/compose-file/merge/#replace-value
+    #       devices: !override
+    #         - capabilities: ["gpu"]
+    #           driver: cdi
+    #           device_ids:
+    #             - nvidia.com/gpu=all
+
 volumes:
   ollama_data:
+  hf-hub-cache:
