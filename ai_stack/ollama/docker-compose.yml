@@ -1,6 +1,8 @@
 services:
   ollama:
-    build: .
+    build: 
+      context: .
+      network: host
     image: localhost/ollama-server:latest
     ports:
       - "11434:11434" # Map host port 11434 to container port 11434 (Ollama default)
@@ -11,6 +13,7 @@ services:
     environment:
       - OLLAMA_HOST=0.0.0.0
     restart: unless-stopped
+    network_mode: slirp4netns
     # Uncomment the following lines if you have NVIDIA GPU support
     # deploy:
     #   resources:

@@ -9,6 +9,8 @@ ENV OLLAMA_HOST=0.0.0.0
 RUN apt-get update && apt-get install -y \
     curl \
     ca-certificates \
+    wget \
+    gnupg \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Ollama
