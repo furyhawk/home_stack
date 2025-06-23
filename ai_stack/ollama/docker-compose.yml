@@ -4,8 +4,7 @@ services:
       context: .
       network: host
     image: localhost/ollama-server:latest
-    ports:
-      - "11434:11434" # Map host port 11434 to container port 11434 (Ollama default)
+    network_mode: host
     volumes:
       - ./models:/models # Mount a local directory for models
       - ollama_data:/usr/share/ollama/.ollama # Persistent storage for Ollama data
@@ -13,7 +12,6 @@ services:
     environment:
       - OLLAMA_HOST=0.0.0.0
     restart: unless-stopped
-    network_mode: slirp4netns
     # Uncomment the following lines if you have NVIDIA GPU support
     # deploy:
     #   resources:
@@ -26,10 +24,10 @@ services:
   postgres:
     image: docker.io/pgvector/pgvector:pg17
     container_name: ollama-postgres
-    ports:
-      - "54320:5432"
+    network_mode: host
     environment:
       - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PORT=54320
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -37,10 +35,11 @@ services:
   speaches:
     image: ghcr.io/speaches-ai/speaches:latest-cpu
     container_name: speaches-server
+    network_mode: host
     volumes:
       - hf-hub-cache:/home/ubuntu/.cache/huggingface/hub
-    ports:
-      - "8900:8000"
+    environment:
+      - PORT=8900
     # deploy:
     #   resources:
     #     reservations:

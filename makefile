@@ -96,7 +96,7 @@ help:
 	@echo "  make ai-launcher          Interactive AI backend launcher (recommended for new users)"
 	@echo ""
 	@echo "Ollama-specific targets:"
-	@echo "  make ollama-build         Build Ollama container with no cache (using slirp4netns)"
+	@echo "  make ollama-build         Build Ollama container with no cache (using host networking)"
 	@echo "  make ollama-build-host    Build Ollama container with host networking (alternative)"
 	@echo "  make ollama-up            Start only the Ollama container"
 	@echo "  make ollama-down          Stop only the Ollama container"
@@ -138,7 +138,7 @@ info:
 
 # Ollama-specific targets
 ollama-build:
-	cd ai_stack/ollama && DOCKER_BUILDKIT=0 CONTAINERS_NETNS=slirp4netns podman compose build --no-cache
+	cd ai_stack/ollama && DOCKER_BUILDKIT=0 podman compose build --no-cache
 	@echo "Ollama container built with no cache. Use 'make ollama-up' to start it."
 
 ollama-build-host:
