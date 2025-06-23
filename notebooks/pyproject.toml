@@ -75,4 +75,5 @@ dependencies = [
 [tool.uv.workspace]
 members = [
     "pydantic_ai",
+    "faster-whisper",
 ]
