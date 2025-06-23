@@ -5,6 +5,8 @@ services:
       network: host
     image: localhost/ollama-server:latest
     network_mode: host
+    ports:
+      - "11434:11434" # Map host port 11434 to container port 11434
     volumes:
       - ./models:/models # Mount a local directory for models
       - ollama_data:/usr/share/ollama/.ollama # Persistent storage for Ollama data
@@ -25,6 +27,8 @@ services:
     image: docker.io/pgvector/pgvector:pg17
     container_name: ollama-postgres
     network_mode: host
+    ports:
+      - "54320:54320" # Map host port 54320 to container port 54320
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_PORT=54320
@@ -36,6 +40,8 @@ services:
     image: ghcr.io/speaches-ai/speaches:latest-cpu
     container_name: speaches-server
     network_mode: host
+    ports:
+      - "8900:8900" # Map host port 8900 to container port 8900
     volumes:
       - hf-hub-cache:/home/ubuntu/.cache/huggingface/hub
     environment:
