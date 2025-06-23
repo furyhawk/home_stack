@@ -24,7 +24,7 @@ services:
     #           capabilities: [gpu]
 
   postgres:
-    image: pgvector/pgvector:pg17
+    image: docker.io/pgvector/pgvector:pg17
     container_name: ollama-postgres
     ports:
       - "54320:5432"
