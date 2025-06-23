@@ -4,7 +4,7 @@ services:
       context: .
       network: host
     image: localhost/ollama-server:latest
-    network_mode: host
+    # network_mode: host
     ports:
       - "11434:11434" # Map host port 11434 to container port 11434
     volumes:
@@ -26,7 +26,7 @@ services:
   postgres:
     image: docker.io/pgvector/pgvector:pg17
     container_name: ollama-postgres
-    network_mode: host
+    # network_mode: host
     ports:
       - "54320:54320" # Map host port 54320 to container port 54320
     environment:
@@ -39,7 +39,7 @@ services:
   speaches:
     image: ghcr.io/speaches-ai/speaches:latest-cpu
     container_name: speaches-server
-    network_mode: host
+    # network_mode: host
     ports:
       - "8900:8900" # Map host port 8900 to container port 8900
     volumes:
