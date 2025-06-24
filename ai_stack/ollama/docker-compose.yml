@@ -28,7 +28,7 @@ services:
     container_name: ollama-postgres
     # network_mode: host
     ports:
-      - "54320:54320" # Map host port 54320 to container port 54320
+      - "54320:5432" # Map host port 54320 to container port 5432
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_PORT=54320
@@ -41,7 +41,7 @@ services:
     container_name: speaches-server
     # network_mode: host
     ports:
-      - "8900:8900" # Map host port 8900 to container port 8900
+      - "8900:8000" # Map host port 8900 to container port 8000
     volumes:
       - hf-hub-cache:/home/ubuntu/.cache/huggingface/hub
     environment:
