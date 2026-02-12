@@ -3,9 +3,14 @@ services:
     image: docker.io/vllm/vllm-openai:cu130-nightly
     command:
       - --model
-      - Qwen/Qwen3-0.6B
+      # - Qwen/Qwen3-4B-Instruct-2507
+      - Qwen/Qwen3-VL-2B-Instruct
+      - --gpu-memory-utilization
+      - "0.75"
+      - --max-model-len
+      - "2048"
     ports:
-      - "8000:8000"
+      - "9000:8000"
     environment:
       HF_TOKEN: ${HF_TOKEN}
     volumes:
