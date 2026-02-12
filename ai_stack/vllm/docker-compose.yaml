@@ -1,0 +1,23 @@
+services:
+  vllm:
+    image: docker.io/vllm/vllm-openai:cu130-nightly
+    command:
+      - --model
+      - Qwen/Qwen3-0.6B
+    ports:
+      - "8000:8000"
+    environment:
+      HF_TOKEN: ${HF_TOKEN}
+    volumes:
+      - ${HOME}/.cache/huggingface:/root/.cache/huggingface
+    ipc: host
+    deploy:
+      resources:
+        reservations:
+          # WARN: requires Docker Compose 2.24.2
+          # https://docs.docker.com/reference/compose-file/merge/#replace-value
+          devices: !override
+            - capabilities: ["gpu"]
+              driver: cdi
+              device_ids:
+                - nvidia.com/gpu=all
