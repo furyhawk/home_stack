@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     wget \
     gnupg \
+    zstd \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Ollama

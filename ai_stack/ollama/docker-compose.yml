@@ -15,13 +15,13 @@ services:
       - OLLAMA_HOST=0.0.0.0
     restart: unless-stopped
     # Uncomment the following lines if you have NVIDIA GPU support
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: all
-    #           capabilities: [gpu]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
   postgres:
     image: docker.io/pgvector/pgvector:pg17
