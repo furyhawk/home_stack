@@ -1,15 +1,12 @@
 services:
   ollama:
-    build: 
-      context: .
-      network: host
-    image: localhost/ollama-server:latest
+    image: docker.io/ollama/ollama:latest
     # network_mode: host
     ports:
       - "11434:11434" # Map host port 11434 to container port 11434
     volumes:
       - ./models:/models # Mount a local directory for models
-      - ollama_data:/usr/share/ollama/.ollama # Persistent storage for Ollama data
+      - ollama_data:/root/.ollama # Persistent storage for Ollama data
     container_name: ollama-server
     environment:
       - OLLAMA_HOST=0.0.0.0
@@ -19,22 +16,23 @@ services:
       resources:
         reservations:
           devices:
-            - driver: nvidia
-              count: all
+            - driver: cdi
               capabilities: [gpu]
+              device_ids:
+                - nvidia.com/gpu=all
 
-  postgres:
-    image: docker.io/pgvector/pgvector:pg17
-    container_name: ollama-postgres
-    # network_mode: host
-    ports:
-      - "54320:5432" # Map host port 54320 to container port 5432
-    environment:
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_PORT=54320
-    volumes:
-      - ./postgres-data:/var/lib/postgresql/data
-    restart: unless-stopped
+  # postgres:
+  #   image: docker.io/pgvector/pgvector:pg17
+  #   container_name: ollama-postgres
+  #   # network_mode: host
+  #   ports:
+  #     - "54320:5432" # Map host port 54320 to container port 5432
+  #   environment:
+  #     - POSTGRES_PASSWORD=postgres
+  #     - POSTGRES_PORT=54320
+  #   volumes:
+  #     - ./postgres-data:/var/lib/postgresql/data
+  #   restart: unless-stopped
 
   speaches:
     image: ghcr.io/speaches-ai/speaches:latest-cpu
