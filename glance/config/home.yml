@@ -34,7 +34,6 @@
 
     - size: full
       widgets:
-
         - type: rss
           title: News
           style: horizontal-cards
@@ -59,7 +58,7 @@
               subreddit: technology
               show-thumbnails: true
             - type: reddit
-              subreddit: selfhosted
+              subreddit: LocalLLaMA
               show-thumbnails: true
 
         - type: group
