@@ -27,10 +27,10 @@ async function listModels() {
 async function getModel(modelId: string) {
   try {
     const response = await ModelsService.getLocalModelV1ModelsModelIdGet({
-      path: { model_id: modelId }
+      modelId
     });
-    console.log('Model details:', response.data);
-    return response.data;
+    console.log('Model details:', response);
+    return response;
   } catch (error) {
     console.error('Error getting model:', error);
   }
@@ -40,7 +40,7 @@ async function getModel(modelId: string) {
 async function chatCompletion() {
   try {
     const response = await DefaultService.handleCompletionsV1ChatCompletionsPost({
-      body: {
+      requestBody: {
         model: 'llama2', // Replace with your model
         messages: [
           {
@@ -50,8 +50,8 @@ async function chatCompletion() {
         ]
       }
     });
-    console.log('Chat response:', response.data);
-    return response.data;
+    console.log('Chat response:', response);
+    return response;
   } catch (error) {
     console.error('Error in chat completion:', error);
   }
@@ -60,15 +60,14 @@ async function chatCompletion() {
 // Example: Transcribe audio
 async function transcribeAudio(audioFile: File) {
   try {
-    const formData = new FormData();
-    formData.append('file', audioFile);
-    formData.append('model', 'whisper-1');
-    
     const response = await AutomaticSpeechRecognitionService.transcribeFileV1AudioTranscriptionsPost({
-      formData
+      formData: {
+        file: audioFile,
+        model: 'whisper-1'
+      }
     });
-    console.log('Transcription:', response.data);
-    return response.data;
+    console.log('Transcription:', response);
+    return response;
   } catch (error) {
     console.error('Error transcribing audio:', error);
   }
@@ -78,14 +77,14 @@ async function transcribeAudio(audioFile: File) {
 async function synthesizeSpeech(text: string, voice: string = 'default') {
   try {
     const response = await SpeechToTextService.synthesizeV1AudioSpeechPost({
-      body: {
+      requestBody: {
         model: 'tts-1',
         input: text,
         voice: voice
       }
     });
-    console.log('Speech synthesis response:', response.data);
-    return response.data;
+    console.log('Speech synthesis response:', response);
+    return response;
   } catch (error) {
     console.error('Error synthesizing speech:', error);
   }

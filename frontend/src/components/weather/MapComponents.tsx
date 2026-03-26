@@ -7,8 +7,9 @@ export function MapInvalidator() {
 
     useEffect(() => {
         // Invalidate size after mount and on window resize
-        const timer = setTimeout(() => map.invalidateSize(), 100);
-        const handleResize = () => map.invalidateSize();
+        const invalidateWithoutPan = () => map.invalidateSize({ pan: false, animate: false });
+        const timer = setTimeout(invalidateWithoutPan, 100);
+        const handleResize = () => invalidateWithoutPan();
         window.addEventListener('resize', handleResize);
         return () => {
             clearTimeout(timer);
