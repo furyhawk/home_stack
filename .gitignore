@@ -14,3 +14,4 @@ ai_stack/llamacpp/models/
 ai_stack/ollama/models/
 notebooks/chroma_db/
 notebooks/llama-2-7b-chat.Q4_K_M.gguf
+esphome/config/
