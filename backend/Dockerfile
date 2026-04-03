@@ -1,4 +1,4 @@
-FROM docker.io/python:3.13
+FROM docker.io/python:3.14
 
 ENV PYTHONUNBUFFERED=1
 
