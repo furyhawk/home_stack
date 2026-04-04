@@ -34,16 +34,16 @@ services:
   #     - ./postgres-data:/var/lib/postgresql/data
   #   restart: unless-stopped
 
-  speaches:
-    image: ghcr.io/speaches-ai/speaches:latest-cpu
-    container_name: speaches-server
-    # network_mode: host
-    ports:
-      - "8900:8000" # Map host port 8900 to container port 8000
-    volumes:
-      - hf-hub-cache:/home/ubuntu/.cache/huggingface/hub
-    environment:
-      - PORT=8900
+  # speaches:
+  #   image: ghcr.io/speaches-ai/speaches:latest-cpu
+  #   container_name: speaches-server
+  #   # network_mode: host
+  #   ports:
+  #     - "8900:8000" # Map host port 8900 to container port 8000
+  #   volumes:
+  #     - hf-hub-cache:/home/ubuntu/.cache/huggingface/hub
+  #   environment:
+  #     - PORT=8900
     # deploy:
     #   resources:
     #     reservations:
