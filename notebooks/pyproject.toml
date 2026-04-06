@@ -12,6 +12,7 @@ dependencies = [
     "chromadb>=0.6.3",
     "cloudpickle>=3.1.1",
     "compressed-tensors>=0.9.4",
+    "ddgs==9.10.0",
     "depyf>=0.18.0",
     "einops>=0.8.1",
     "fastapi[standard]>=0.115.0",
