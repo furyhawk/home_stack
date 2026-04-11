@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <key>local.llama.server</key>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/homebrew/bin/llama-server</string>
+        <string>--model</string>
+        <string>/Users/user/unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-UD-Q4_K_XL.gguf</string>
+        <string>--mmproj</string>
+        <string>/Users/user/unsloth/Qwen3.5-0.8B-GGUF/mmproj-BF16.gguf</string>
+        <string>--temp</string>
+        <string>1.0</string>
+        <string>--top-p</string>
+        <string>0.95</string>
+        <string>--top-k</string>
+        <string>20</string>
+        <string>--min-p</string>
+        <string>0.00</string>
+        <string>--alias</string>
+        <string>unsloth/Qwen3.5-0.8B-GGUF</string>
+        <string>--cache-type-k</string>
+        <string>q4_0</string>
+        <string>--cache-type-v</string>
+        <string>q4_0</string>
+        <string>--host</string>
+        <string>0.0.0.0</string>
+        <string>--port</string>
+        <string>8011</string>
+        <string>--chat-template-kwargs</string>
+        <string>{"enable_thinking":false}</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/user/projects/home_stack/ai_stack/llamacpp.server/server.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/user/projects/home_stack/ai_stack/llamacpp.server/server.log</string>
+    <key>WorkingDirectory</key>
+    <string>/Users/user/projects/home_stack/ai_stack/llamacpp.server</string>
+</dict>
+</plist>

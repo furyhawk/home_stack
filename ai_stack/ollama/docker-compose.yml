@@ -1,0 +1,60 @@
+services:
+  ollama:
+    image: docker.io/ollama/ollama:latest
+    # network_mode: host
+    ports:
+      - "11434:11434" # Map host port 11434 to container port 11434
+    volumes:
+      - ./models:/models # Mount a local directory for models
+      - ollama_data:/root/.ollama # Persistent storage for Ollama data
+    container_name: ollama-server
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    restart: unless-stopped
+    # Uncomment the following lines if you have NVIDIA GPU support
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: cdi
+              capabilities: [gpu]
+              device_ids:
+                - nvidia.com/gpu=all
+
+  # postgres:
+  #   image: docker.io/pgvector/pgvector:pg17
+  #   container_name: ollama-postgres
+  #   # network_mode: host
+  #   ports:
+  #     - "54320:5432" # Map host port 54320 to container port 5432
+  #   environment:
+  #     - POSTGRES_PASSWORD=postgres
+  #     - POSTGRES_PORT=54320
+  #   volumes:
+  #     - ./postgres-data:/var/lib/postgresql/data
+  #   restart: unless-stopped
+
+  # speaches:
+  #   image: ghcr.io/speaches-ai/speaches:latest-cpu
+  #   container_name: speaches-server
+  #   # network_mode: host
+  #   ports:
+  #     - "8900:8000" # Map host port 8900 to container port 8000
+  #   volumes:
+  #     - hf-hub-cache:/home/ubuntu/.cache/huggingface/hub
+  #   environment:
+  #     - PORT=8900
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       # WARN: requires Docker Compose 2.24.2
+    #       # https://docs.docker.com/reference/compose-file/merge/#replace-value
+    #       devices: !override
+    #         - capabilities: ["gpu"]
+    #           driver: cdi
+    #           device_ids:
+    #             - nvidia.com/gpu=all
+
+volumes:
+  ollama_data:
+  hf-hub-cache:

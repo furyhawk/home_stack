@@ -1,0 +1,29 @@
+services:
+  vllm:
+    image: docker.io/vllm/vllm-openai:latest
+    command:
+      - --model
+      # - Qwen/Qwen3-4B-Instruct-2507
+      - Qwen/Qwen3-VL-2B-Instruct
+      - --device
+      - cpu
+      - --max-model-len
+      - "2048"
+    ports:
+      - "9000:8000"
+    environment:
+      HF_TOKEN: ${HF_TOKEN}
+      VLLM_USE_V1: "0"
+    volumes:
+      - ${HOME}/.cache/huggingface:/root/.cache/huggingface
+    ipc: host
+    deploy:
+      resources:
+        reservations:
+          # WARN: requires Docker Compose 2.24.2
+          # https://docs.docker.com/reference/compose-file/merge/#replace-value
+          devices: !override
+            - capabilities: ["gpu"]
+              driver: cdi
+              device_ids:
+                - nvidia.com/gpu=all

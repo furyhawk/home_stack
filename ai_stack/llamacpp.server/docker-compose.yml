@@ -1,0 +1,30 @@
+services:
+  llama-cpp-server:
+    build: .
+    image: ghcr.io/ggml-org/llama.cpp:full-cuda13
+    ports:
+      - "8080:8080" # Map host port 8080 to container port 8080
+    volumes:
+      - ./models:/models # Mount a local directory for models
+    container_name: llama-cpp-server
+    environment:
+      - LLAMA_ARG_HOST=0.0.0.0
+      - LLAMA_ARG_PORT=8080
+    restart: unless-stopped
+    command: [
+      "--server",
+      "--model", "/models/gemma-4-E2B-it-Q8_0.gguf",
+      "--mmproj", "/models/mmproj-BF16.gguf",
+      "--host", "0.0.0.0",
+      "--port", "8080",
+      "--flash-attn", "auto"
+    ]
+    # Uncomment for GPU support
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: cdi
+              capabilities: [gpu]
+              device_ids:
+                - nvidia.com/gpu=all

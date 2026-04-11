@@ -21,7 +21,7 @@ include $(ENV_FILE)
 export
 
 # Targets
-.PHONY: up up-e2e down restart logs build reset network
+.PHONY: up up-e2e down restart logs build reset network clean prune backup restore help info ollama-build ollama-build-host ollama-up ollama-down ollama-logs pull-deepseek-model setup-ollama llamacpp-build llamacpp-build-host llamacpp-up llamacpp-down llamacpp-logs pull-deepseek-llamacpp setup-llamacpp llamacpp-gpu ai-launcher
 
 network:
 	@podman network exists traefik-public || podman network create traefik-public
@@ -94,20 +94,40 @@ help:
 	@echo "Makefile for managing Podman Compose"
 	@echo ""
 	@echo "Usage:"
-	@echo "  make network    Create the traefik-public network if it doesn't exist"
-	@echo "  make up         Start the containers in detached mode"
-	@echo "  make up-e2e     Start containers including the Playwright test service"
-	@echo "  make down       Stop the containers"
-	@echo "  make logs       View the logs of the containers"
-	@echo "  make build      Build the images directly with Podman (override with BUILD_NETWORK=...)"
-	@echo "  make restart    Restart the containers"
-	@echo "  make reset      Completely reset Podman (containers, volumes, networks)"
-	@echo "  make backup     Create a backup of the database volume"
-	@echo "  make restore    Restore the database volume from a backup"
-	@echo "  make clean      Remove all containers and volumes"
-	@echo "  make prune      Remove all stopped containers and unused volumes"
-	@echo "  make info       Display detailed information about Podman state"
-	@echo "  make help       View this help message"
+	@echo "  make network              Create the traefik-public network if it doesn't exist"
+	@echo "  make up                   Start the containers in detached mode"
+	@echo "  make up-e2e               Start containers including the Playwright test service"
+	@echo "  make down                 Stop the containers"
+	@echo "  make logs                 View the logs of the containers"
+	@echo "  make build                Build backend, frontend, and Playwright images directly with Podman"
+	@echo "  make restart              Restart the containers"
+	@echo "  make reset                Completely reset Podman (containers, volumes, networks)"
+	@echo "  make backup               Create a backup of the database volume"
+	@echo "  make restore              Restore the database volume from a backup"
+	@echo "  make clean                Remove all containers and volumes"
+	@echo "  make prune                Remove all stopped containers and unused volumes"
+	@echo "  make info                 Display detailed information about Podman state"
+	@echo "  make help                 View this help message"
+	@echo "  make ai-launcher          Interactive AI backend launcher (recommended for new users)"
+	@echo ""
+	@echo "Ollama-specific targets:"
+	@echo "  make ollama-build         Build Ollama container with no cache (using host networking)"
+	@echo "  make ollama-build-host    Build Ollama container with host networking (alternative)"
+	@echo "  make ollama-up            Start only the Ollama container"
+	@echo "  make ollama-down          Stop only the Ollama container"
+	@echo "  make ollama-logs          View Ollama container logs"
+	@echo "  make pull-deepseek-model  Download and load DeepSeek-R1 model into Ollama"
+	@echo "  make setup-ollama         Start Ollama and automatically pull DeepSeek model"
+	@echo ""
+	@echo "LlamaCPP-specific targets:"
+	@echo "  make llamacpp-build       Build LlamaCPP container with no cache (using slirp4netns)"
+	@echo "  make llamacpp-build-host  Build LlamaCPP container with host networking (alternative)"
+	@echo "  make llamacpp-up          Start only the LlamaCPP container"
+	@echo "  make llamacpp-down        Stop only the LlamaCPP container"
+	@echo "  make llamacpp-logs        View LlamaCPP container logs"
+	@echo "  make pull-deepseek-llamacpp  Download DeepSeek-R1 model for LlamaCPP"
+	@echo "  make setup-llamacpp       Start LlamaCPP and automatically pull DeepSeek model"
+	@echo "  make llamacpp-gpu         Start GPU-accelerated LlamaCPP with DeepSeek model"
 	@echo ""
 
 info:
@@ -123,3 +143,70 @@ info:
 	podman images
 	@echo "\n===== Podman Compose Config ====="
 	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml config
+
+# Ollama-specific targets
+ollama-build:
+	cd ai_stack/ollama && DOCKER_BUILDKIT=0 podman compose build --no-cache
+	@echo "Ollama container built with no cache. Use 'make ollama-up' to start it."
+
+ollama-build-host:
+	cd ai_stack/ollama && DOCKER_BUILDKIT=0 podman build --network=host --no-cache -t localhost/ollama-server:latest .
+	@echo "Ollama container built with host networking. Use 'make ollama-up' to start it."
+
+ollama-up:
+	cd ai_stack/ollama && podman compose up -d
+	@echo "Ollama container started. Use 'make pull-deepseek-model' to download and load the DeepSeek model."
+
+ollama-down:
+	cd ai_stack/ollama && podman compose down
+	@echo "Ollama container stopped."
+
+ollama-logs:
+	cd ai_stack/ollama && podman compose logs -f
+
+pull-deepseek-model:
+	@echo "Pulling DeepSeek-R1 model from Hugging Face..."
+	./scripts/pull-deepseek-model.sh
+	@echo "Model setup completed. You can now use the model with Ollama."
+
+setup-ollama: ollama-up
+	@echo "Waiting for Ollama to be ready..."
+	@sleep 10
+	@$(MAKE) pull-deepseek-model
+
+# LlamaCPP-specific targets
+llamacpp-build:
+	cd ai_stack/llamacpp && DOCKER_BUILDKIT=0 CONTAINERS_NETNS=slirp4netns podman compose build --no-cache
+	@echo "LlamaCPP container built with no cache. Use 'make llamacpp-up' to start it."
+
+llamacpp-build-host:
+	cd ai_stack/llamacpp && DOCKER_BUILDKIT=0 podman build --network=host --no-cache -t localhost/llama-cpp-server:latest .
+	@echo "LlamaCPP container built with host networking. Use 'make llamacpp-up' to start it."
+
+llamacpp-up:
+	cd ai_stack/llamacpp && podman compose up -d
+	@echo "LlamaCPP container started. Use 'make pull-deepseek-llamacpp' to download the DeepSeek model."
+
+llamacpp-down:
+	cd ai_stack/llamacpp && podman compose down
+	@echo "LlamaCPP container stopped."
+
+llamacpp-logs:
+	cd ai_stack/llamacpp && podman compose logs -f
+
+pull-deepseek-llamacpp:
+	@echo "Pulling DeepSeek-R1 model from Hugging Face for LlamaCPP..."
+	./scripts/pull-deepseek-llamacpp.sh
+	@echo "Model setup completed. You can now use the model with LlamaCPP."
+
+setup-llamacpp: llamacpp-up
+	@echo "Waiting for LlamaCPP to be ready..."
+	@sleep 15
+	@$(MAKE) pull-deepseek-llamacpp
+
+llamacpp-gpu:
+	@echo "Starting GPU-accelerated LlamaCPP with DeepSeek model..."
+	./scripts/llamacpp-gpu.sh
+
+ai-launcher:
+	@./scripts/ai-launcher.sh

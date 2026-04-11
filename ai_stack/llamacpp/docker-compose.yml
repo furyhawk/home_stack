@@ -1,0 +1,33 @@
+services:
+  llama-cpp-server:
+    build: .
+    image: localhost/llama-cpp-server:latest
+    ports:
+      - "8080:8080" # Map host port 8080 to container port 8080
+    volumes:
+      - ./models:/models # Mount a local directory for models
+    container_name: llama-cpp-server
+    environment:
+      - LLAMA_ARG_HOST=0.0.0.0
+      - LLAMA_ARG_PORT=8080
+    restart: unless-stopped
+    command: [
+      "llama-server",
+      "--model", "/models/DeepSeek-R1-0528-Qwen3-8B-UD-Q4_K_XL.gguf",
+      "--host", "0.0.0.0",
+      "--port", "8080",
+      "--ctx-size", "32768",
+      "--threads", "4",
+      "--batch-size", "512",
+      "--cont-batching",
+      "--parallel", "2",
+      "--flash-attn"
+    ]
+    # Uncomment for GPU support
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
