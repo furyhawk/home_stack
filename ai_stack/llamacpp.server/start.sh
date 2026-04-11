@@ -1,0 +1,1 @@
+nohup llama-server --model ~/unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-UD-Q4_K_XL.gguf --mmproj ~/unsloth/Qwen3.5-0.8B-GGUF/mmproj-BF16.gguf --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.00 --alias "unsloth/Qwen3.5-0.8B-GGUF" --cache-type-k q4_0 --cache-type-v q4_0 --host 0.0.0.0 --port 8011 --chat-template-kwargs '{"enable_thinking":false}' > server.log 2>&1 &

@@ -1,0 +1,30 @@
+[Unit]
+Description=Llama.cpp Server for Qwen3.5
+After=network.target
+
+[Service]
+Type=simple
+Environment="MODEL_PATH=/home/user/unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-UD-Q4_K_XL.gguf"
+Environment="MMPROJ_PATH=/home/user/unsloth/Qwen3.5-0.8B-GGUF/mmproj-BF16.gguf"
+ExecStart=/usr/local/bin/llama-server \
+  --model ${MODEL_PATH} \
+  --mmproj ${MMPROJ_PATH} \
+  --temp 1.0 \
+  --top-p 0.95 \
+  --top-k 20 \
+  --min-p 0.00 \
+  --alias "unsloth/Qwen3.5-0.8B-GGUF" \
+  --cache-type-k q4_0 \
+  --cache-type-v q4_0 \
+  --host 0.0.0.0 \
+  --port 8011 \
+  --chat-template-kwargs '{"enable_thinking":false}'
+Restart=always
+RestartSec=5
+User=user
+WorkingDirectory=/home/user/projects/home_stack/ai_stack/llamacpp.server
+StandardOutput=append:/home/user/projects/home_stack/ai_stack/llamacpp.server/server.log
+StandardError=append:/home/user/projects/home_stack/ai_stack/llamacpp.server/server.log
+
+[Install]
+WantedBy=multi-user.target
