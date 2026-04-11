@@ -22,6 +22,9 @@ Native way to run as a persistent background service on Debian/Ubuntu.
   2. Reload systemd: `sudo systemctl daemon-reload`
   3. Enable and Start: `sudo systemctl enable --now llama-server`
 - **Check health**: `sudo systemctl status llama-server`
+- **View logs**: 
+  - Real-time: `journalctl -u llama-server -f`
+  - Since boot: `journalctl -u llama-server -b`
 
 ---
 

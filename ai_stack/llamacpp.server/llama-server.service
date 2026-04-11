@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-Environment="MODEL_PATH=/home/user/unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-UD-Q4_K_XL.gguf"
-Environment="MMPROJ_PATH=/home/user/unsloth/Qwen3.5-0.8B-GGUF/mmproj-BF16.gguf"
+Environment="MODEL_PATH=%h/unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-UD-Q4_K_XL.gguf"
+Environment="MMPROJ_PATH=%h/unsloth/Qwen3.5-0.8B-GGUF/mmproj-BF16.gguf"
 ExecStart=/usr/local/bin/llama-server \
   --model ${MODEL_PATH} \
   --mmproj ${MMPROJ_PATH} \
@@ -21,10 +21,10 @@ ExecStart=/usr/local/bin/llama-server \
   --chat-template-kwargs '{"enable_thinking":false}'
 Restart=always
 RestartSec=5
-User=user
-WorkingDirectory=/home/user/projects/home_stack/ai_stack/llamacpp.server
-StandardOutput=append:/home/user/projects/home_stack/ai_stack/llamacpp.server/server.log
-StandardError=append:/home/user/projects/home_stack/ai_stack/llamacpp.server/server.log
+User=%u
+WorkingDirectory=%h/projects/home_stack/ai_stack/llamacpp.server
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
