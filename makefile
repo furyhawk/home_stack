@@ -11,9 +11,9 @@ IMAGE_TAG=$(if $(TAG),$(TAG),latest)
 BACKEND_IMAGE?=$(DOCKER_IMAGE_BACKEND):$(IMAGE_TAG)
 FRONTEND_IMAGE?=$(DOCKER_IMAGE_FRONTEND):$(IMAGE_TAG)
 PLAYWRIGHT_IMAGE?=docker.io/furyhawk/home_stack_playwright:latest
-FRONTEND_BUILD_VITE_API_URL?=https://mail.furyhawk.lol
+FRONTEND_BUILD_VITE_API_URL?=https://service.furyhawk.lol
 FRONTEND_BUILD_NODE_ENV?=development
-PLAYWRIGHT_BUILD_VITE_API_URL?=https://mail.furyhawk.lol
+PLAYWRIGHT_BUILD_VITE_API_URL?=https://service.furyhawk.lol
 PLAYWRIGHT_BUILD_NODE_ENV?=production
 
 # Load environment variables from .env
