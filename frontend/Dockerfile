@@ -3,13 +3,18 @@ FROM docker.io/node:24 AS build-stage
 
 WORKDIR /app
 
-# Copy everything at once to minimize separate RUN steps
+ARG VITE_API_URL
+ARG NODE_ENV=production
+ENV VITE_API_URL=${VITE_API_URL}
+ENV NODE_ENV=${NODE_ENV}
+
+COPY package*.json /app/
+
+RUN npm ci
+
 COPY . /app/
 
-# Offline build - only one RUN command to minimize network operations
-RUN npm ci --offline || npm install --no-network && npm run build
-
-ARG VITE_API_URL=${VITE_API_URL}
+RUN npm run build
 
 
 # Stage 1, based on Nginx, to have only the compiled app, ready for production with Nginx

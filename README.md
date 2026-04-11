@@ -212,6 +212,46 @@ The input variables, with their default values (some auto generated) are:
 - `postgres_password`: (default: `"changethis"`) The password for the PostgreSQL database, stored in .env, you can generate one with the method above.
 - `sentry_dsn`: (default: "") The DSN for Sentry, if you are using it, you can set it later in .env.
 
+## Quick Start
+
+To build and run the stack locally:
+
+```bash
+make build
+make up
+```
+
+Then visit:
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+- Adminer (Database UI): http://localhost:8080
+- MailCatcher (Email UI): http://localhost:1080
+
+### Building with Make
+
+The `make build` command uses direct Podman image builds with host networking, which is the recommended approach for most Podman environments. See [development.md](./development.md) for build network customization if needed.
+
+### Running End-to-End Tests
+
+To include the Playwright testing service:
+
+```bash
+make up-e2e
+```
+
+This starts all services including the optional Playwright container for E2E testing.
+
+### Available Make Targets
+
+- `make build` - Build all container images
+- `make up` - Start the stack (without Playwright)
+- `make up-e2e` - Start the stack including Playwright for E2E tests
+- `make down` - Stop all containers
+- `make restart` - Restart the stack
+- `make logs` - View container logs
+- `make reset` - Completely reset Podman (containers, volumes, networks)
+
 ## Backend Development
 
 Backend docs: [backend/README.md](./backend/README.md).
@@ -228,7 +268,7 @@ Deployment docs: [deployment.md](./deployment.md).
 
 General development docs: [development.md](./development.md).
 
-This includes using Docker Compose, custom local domains, `.env` configurations, etc.
+This includes using Docker Compose, custom local domains, `.env` configurations, Podman networking notes, and more detailed build information.
 
 ## Release Notes
 

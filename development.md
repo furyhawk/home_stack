@@ -2,6 +2,16 @@
 
 ## Docker Compose
 
+This repository's `make build` target uses direct `podman build` commands with `--network host` by default instead of `podman compose build`.
+
+That is intentional for Podman environments where the default build network backend depends on `/dev/net/tun` via `pasta`, which can fail before any Dockerfile step runs.
+
+If your Podman host supports a different build network mode, you can override it when invoking make:
+
+```bash
+make build BUILD_NETWORK=private
+```
+
 * Start the local stack with Docker Compose:
 
 ```bash

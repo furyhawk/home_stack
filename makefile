@@ -6,13 +6,22 @@ PROJECT_NAME=home
 DB_VOLUME=home_app-db-data
 BACKUP_DIR=./backups
 ENV_FILE=.env
+BUILD_NETWORK?=host
+IMAGE_TAG=$(if $(TAG),$(TAG),latest)
+BACKEND_IMAGE?=$(DOCKER_IMAGE_BACKEND):$(IMAGE_TAG)
+FRONTEND_IMAGE?=$(DOCKER_IMAGE_FRONTEND):$(IMAGE_TAG)
+PLAYWRIGHT_IMAGE?=docker.io/furyhawk/home_stack_playwright:latest
+FRONTEND_BUILD_VITE_API_URL?=https://mail.furyhawk.lol
+FRONTEND_BUILD_NODE_ENV?=development
+PLAYWRIGHT_BUILD_VITE_API_URL?=https://mail.furyhawk.lol
+PLAYWRIGHT_BUILD_NODE_ENV?=production
 
 # Load environment variables from .env
 include $(ENV_FILE)
 export
 
 # Targets
-.PHONY: up down restart logs build reset network
+.PHONY: up up-e2e down restart logs build reset network
 
 network:
 	@podman network exists traefik-public || podman network create traefik-public
@@ -21,18 +30,23 @@ network:
 up: network
 	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d
 
+up-e2e: network
+	podman compose --profile e2e --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d
+
 down:
-	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml down
+	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml down --remove-orphans
 	@echo "Containers stopped. Use 'make up' to start them again."
 
 build:
-	DOCKER_BUILDKIT=0 podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml build --no-cache
+	podman build --network $(BUILD_NETWORK) --no-cache -t $(BACKEND_IMAGE) -f backend/Dockerfile backend
+	podman build --network $(BUILD_NETWORK) --no-cache -t $(FRONTEND_IMAGE) --build-arg VITE_API_URL=$(FRONTEND_BUILD_VITE_API_URL) --build-arg NODE_ENV=$(FRONTEND_BUILD_NODE_ENV) -f frontend/Dockerfile frontend
+	podman build --network $(BUILD_NETWORK) --no-cache -t $(PLAYWRIGHT_IMAGE) --build-arg VITE_API_URL=$(PLAYWRIGHT_BUILD_VITE_API_URL) --build-arg NODE_ENV=$(PLAYWRIGHT_BUILD_NODE_ENV) -f frontend/Dockerfile.playwright frontend
 	@echo "Containers built. Use 'make up' to start them."
 
 restart: down build up
 
 reset:
-	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml down -v
+	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml down --remove-orphans -v
 	podman system prune -f
 	podman volume prune -f
 	podman network prune -f
@@ -82,9 +96,10 @@ help:
 	@echo "Usage:"
 	@echo "  make network    Create the traefik-public network if it doesn't exist"
 	@echo "  make up         Start the containers in detached mode"
+	@echo "  make up-e2e     Start containers including the Playwright test service"
 	@echo "  make down       Stop the containers"
 	@echo "  make logs       View the logs of the containers"
-	@echo "  make build      Build the containers"
+	@echo "  make build      Build the images directly with Podman (override with BUILD_NETWORK=...)"
 	@echo "  make restart    Restart the containers"
 	@echo "  make reset      Completely reset Podman (containers, volumes, networks)"
 	@echo "  make backup     Create a backup of the database volume"

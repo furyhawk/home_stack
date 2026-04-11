@@ -104,6 +104,8 @@ services:
 
   playwright:
     image: docker.io/furyhawk/home_stack_playwright:latest
+    profiles:
+      - e2e
     build:
       context: ./frontend
       dockerfile: Dockerfile.playwright
