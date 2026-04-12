@@ -22,5 +22,13 @@ export default defineConfig({
       "localhost:5175",
       "dev.furyhawk.lol",
     ],
+    proxy: {
+      "/fury-api": {
+        target: "https://api.furyhawk.lol",
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/fury-api/, ""),
+      },
+    },
   },
-});
+})

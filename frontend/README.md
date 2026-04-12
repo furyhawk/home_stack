@@ -111,6 +111,14 @@ VITE_API_URL=https://api.my-domain.example.com
 
 Then, when you run the frontend, it will use that URL as the base URL for the API.
 
+The home dashboard also reads public sensor data from `https://api.furyhawk.lol`. Those requests are routed through the frontend at `/fury-api` in both Vite dev mode and nginx so the browser does not hit the remote origin directly.
+
+Example proxied route:
+
+```text
+/fury-api/temperature/search?limit=12
+```
+
 ## Code Structure
 
 The frontend code is structured as follows:
