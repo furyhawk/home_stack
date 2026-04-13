@@ -104,7 +104,7 @@ services:
     build:
       context: ./frontend
       args:
-        - VITE_API_URL=https://service.furyhawk.lol
+        - VITE_API_URL=http://localhost:8000
         - NODE_ENV=development
 
   playwright:
@@ -115,8 +115,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.playwright
       args:
-        - VITE_API_URL=https://service.furyhawk.lol
-        - NODE_ENV=production
+        - VITE_API_URL=http://localhost:8000
+        - NODE_ENV=development
     ipc: host
     depends_on:
       - backend
@@ -124,8 +124,8 @@ services:
     env_file:
       - .env
     environment:
-      - VITE_API_URL=https://service.furyhawk.lol
-      - MAILCATCHER_HOST=https://mail.furyhawk.lol
+      - VITE_API_URL=http://localhost:8000
+      - MAILCATCHER_HOST=http://localhost:1080
       # For the reports when run locally
       - PLAYWRIGHT_HTML_HOST=0.0.0.0
       - CI=${CI}

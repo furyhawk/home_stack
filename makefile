@@ -21,7 +21,7 @@ include $(ENV_FILE)
 export
 
 # Targets
-.PHONY: up up-e2e down restart logs build reset network clean prune backup restore help info ollama-build ollama-build-host ollama-up ollama-down ollama-logs pull-deepseek-model setup-ollama llamacpp-build llamacpp-build-host llamacpp-up llamacpp-down llamacpp-logs pull-deepseek-llamacpp setup-llamacpp llamacpp-gpu ai-launcher
+.PHONY: up up-e2e down restart logs build reset network deploy-local deploy-production clean prune backup restore help info ollama-build ollama-build-host ollama-up ollama-down ollama-logs pull-deepseek-model setup-ollama llamacpp-build llamacpp-build-host llamacpp-up llamacpp-down llamacpp-logs pull-deepseek-llamacpp setup-llamacpp llamacpp-gpu ai-launcher
 
 network:
 	@podman network exists traefik-public || podman network create traefik-public
@@ -52,6 +52,14 @@ reset:
 	podman network prune -f
 	podman pod prune -f
 	@echo "Environment completely reset. Use 'make build' then 'make up' to recreate."
+
+deploy-local: network
+	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d --build
+	@echo "Local deployment completed using docker-compose.yml + docker-compose.override.yml"
+
+deploy-production: network
+	podman compose --env-file $(ENV_FILE) -f docker-compose.yml up -d --build
+	@echo "Production deployment completed using docker-compose.yml"
 
 backup:
 	@mkdir -p $(BACKUP_DIR)
@@ -102,6 +110,8 @@ help:
 	@echo "  make build                Build backend, frontend, and Playwright images directly with Podman"
 	@echo "  make restart              Restart the containers"
 	@echo "  make reset                Completely reset Podman (containers, volumes, networks)"
+	@echo "  make deploy-local         Deploy locally with development overrides"
+	@echo "  make deploy-production    Deploy with production compose file only"
 	@echo "  make backup               Create a backup of the database volume"
 	@echo "  make restore              Restore the database volume from a backup"
 	@echo "  make clean                Remove all containers and volumes"
