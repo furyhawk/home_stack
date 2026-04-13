@@ -16,3 +16,4 @@ notebooks/chroma_db/
 notebooks/llama-2-7b-chat.Q4_K_M.gguf
 esphome/config/
 ai_stack/llamacpp.server/models/
+.env
