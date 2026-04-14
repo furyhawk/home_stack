@@ -6,11 +6,12 @@ WORKDIR /app
 ARG VITE_API_URL
 ARG NODE_ENV=production
 ENV VITE_API_URL=${VITE_API_URL}
-ENV NODE_ENV=${NODE_ENV}
 
 COPY package*.json /app/
 
-RUN npm ci
+RUN NODE_ENV=development npm ci
+
+ENV NODE_ENV=${NODE_ENV}
 
 COPY . /app/
 
