@@ -16,6 +16,12 @@ FRONTEND_BUILD_NODE_ENV?=development
 PLAYWRIGHT_BUILD_VITE_API_URL?=https://service.furyhawk.lol
 PLAYWRIGHT_BUILD_NODE_ENV?=production
 
+ifeq ($(OS),Windows_NT)
+CREATE_LOCAL_DIRS_CMD=powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path 'backend/htmlcov','frontend/blob-report','frontend/test-results' | Out-Null"
+else
+CREATE_LOCAL_DIRS_CMD=mkdir -p backend/htmlcov frontend/blob-report frontend/test-results
+endif
+
 # Load environment variables from .env
 include $(ENV_FILE)
 export
@@ -24,7 +30,7 @@ export
 .PHONY: up up-e2e down restart logs build reset network deploy-local deploy-production clean prune backup restore help info ollama-build ollama-build-host ollama-up ollama-down ollama-logs pull-deepseek-model setup-ollama llamacpp-build llamacpp-build-host llamacpp-up llamacpp-down llamacpp-logs pull-deepseek-llamacpp setup-llamacpp llamacpp-gpu ai-launcher
 
 ensure-local-dirs:
-	@pwsh -NoProfile -Command "New-Item -ItemType Directory -Force -Path 'backend/htmlcov','frontend/blob-report','frontend/test-results' | Out-Null"
+	@$(CREATE_LOCAL_DIRS_CMD)
 	@echo "Local bind-mount directories are ready."
 
 network:
@@ -57,8 +63,8 @@ reset:
 	podman pod prune -f
 	@echo "Environment completely reset. Use 'make build' then 'make up' to recreate."
 
-deploy-local: network ensure-local-dirs
-	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d --build
+deploy-local: network ensure-local-dirs build
+	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d
 	@echo "Local deployment completed using docker-compose.yml + docker-compose.override.yml"
 
 deploy-production: network
@@ -81,7 +87,7 @@ restore:
 	podman volume rm $(DB_VOLUME) || true
 	podman volume create --name $(DB_VOLUME)
 	podman volume import $(DB_VOLUME) --input $(LATEST_BACKUP)
-	@pwsh -NoProfile -Command "New-Item -ItemType Directory -Force -Path 'backend/htmlcov','frontend/blob-report','frontend/test-results' | Out-Null"
+	@$(CREATE_LOCAL_DIRS_CMD)
 	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d
 	@echo "Backup and restore completed."
 	@echo "Please check the logs for any errors."
