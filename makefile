@@ -38,10 +38,10 @@ network:
 	@echo "Traefik network ready."
 
 up: network ensure-local-dirs
-	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d --replace
+	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d
 
 up-e2e: network ensure-local-dirs
-	podman compose --profile e2e --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d --replace
+	podman compose --profile e2e --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d
 
 down:
 	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml down --remove-orphans
@@ -64,7 +64,8 @@ reset:
 	@echo "Environment completely reset. Use 'make build' then 'make up' to recreate."
 
 deploy-local: network ensure-local-dirs build
-	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d --replace
+	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml down --remove-orphans
+	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d
 	@echo "Local deployment completed using docker-compose.yml + docker-compose.override.yml"
 
 deploy-production: network
@@ -88,7 +89,8 @@ restore:
 	podman volume create --name $(DB_VOLUME)
 	podman volume import $(DB_VOLUME) --input $(LATEST_BACKUP)
 	@$(CREATE_LOCAL_DIRS_CMD)
-	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d --replace
+	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml down --remove-orphans
+	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d
 	@echo "Backup and restore completed."
 	@echo "Please check the logs for any errors."
 	@echo "Use 'make logs' to view the logs."
