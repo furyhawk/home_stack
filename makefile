@@ -23,14 +23,18 @@ export
 # Targets
 .PHONY: up up-e2e down restart logs build reset network deploy-local deploy-production clean prune backup restore help info ollama-build ollama-build-host ollama-up ollama-down ollama-logs pull-deepseek-model setup-ollama llamacpp-build llamacpp-build-host llamacpp-up llamacpp-down llamacpp-logs pull-deepseek-llamacpp setup-llamacpp llamacpp-gpu ai-launcher
 
+ensure-local-dirs:
+	@pwsh -NoProfile -Command "New-Item -ItemType Directory -Force -Path 'backend/htmlcov','frontend/blob-report','frontend/test-results' | Out-Null"
+	@echo "Local bind-mount directories are ready."
+
 network:
 	@podman network exists traefik-public || podman network create traefik-public
 	@echo "Traefik network ready."
 
-up: network
+up: network ensure-local-dirs
 	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d
 
-up-e2e: network
+up-e2e: network ensure-local-dirs
 	podman compose --profile e2e --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d
 
 down:
@@ -53,7 +57,7 @@ reset:
 	podman pod prune -f
 	@echo "Environment completely reset. Use 'make build' then 'make up' to recreate."
 
-deploy-local: network
+deploy-local: network ensure-local-dirs
 	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d --build
 	@echo "Local deployment completed using docker-compose.yml + docker-compose.override.yml"
 
@@ -77,6 +81,7 @@ restore:
 	podman volume rm $(DB_VOLUME) || true
 	podman volume create --name $(DB_VOLUME)
 	podman volume import $(DB_VOLUME) --input $(LATEST_BACKUP)
+	@pwsh -NoProfile -Command "New-Item -ItemType Directory -Force -Path 'backend/htmlcov','frontend/blob-report','frontend/test-results' | Out-Null"
 	podman compose --env-file $(ENV_FILE) -f docker-compose.yml -f docker-compose.override.yml up -d
 	@echo "Backup and restore completed."
 	@echo "Please check the logs for any errors."
