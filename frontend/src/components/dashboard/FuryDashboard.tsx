@@ -226,7 +226,7 @@ function FuryDashboard() {
               </HStack>
             </Flex>
 
-            <HStack mt={3} spacing={2}>
+            <HStack mt={3} gap={2}>
               {([
                 ["24h", "24h"] ,
                 ["1w", "1w"],
