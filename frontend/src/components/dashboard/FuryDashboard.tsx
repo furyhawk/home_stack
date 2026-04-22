@@ -266,6 +266,7 @@ function FuryDashboard() {
                     </Heading>
                   </Box>
                   <Badge alignSelf="flex-start" colorScheme="gray">
+                    {metric.totalFetched ? `${metric.totalFetched} fetched • ` : ""}
                     {metric.summary.count} pts / {range}
                   </Badge>
                 </Flex>

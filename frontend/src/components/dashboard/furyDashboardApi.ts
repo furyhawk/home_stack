@@ -76,6 +76,8 @@ export interface FuryMetricSnapshot {
   previous: FuryReading | null
   readings: FuryReading[]
   summary: FurySummary
+  // total number of items fetched from the upstream API (before client-side filtering)
+  totalFetched?: number
   unit: string
 }
 
@@ -191,9 +193,7 @@ const fetchMetric = async <TMetricKey extends FuryMetricKey>(
 
   // Ensure the snapshot reflects only the requested range — some upstream
   // proxies may ignore `start_date`/`end_date`, so filter client-side.
-  const filteredReadings = readings.filter(
-    (r) => new Date(r.updateTime).getTime() >= startMs,
-  )
+  const filteredReadings = readings.filter((r) => new Date(r.updateTime).getTime() >= startMs)
 
   return {
     description: config.description,
@@ -202,6 +202,7 @@ const fetchMetric = async <TMetricKey extends FuryMetricKey>(
     latest: filteredReadings[0] ?? null,
     previous: filteredReadings[1] ?? null,
     readings: filteredReadings,
+    totalFetched: allItems.length,
     summary: calculateSummary(filteredReadings, summarySinceMs),
     unit: config.unit,
   }
