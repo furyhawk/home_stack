@@ -8,6 +8,17 @@ const furyApi = axios.create({
 const SENSOR_LIMIT = 288
 const DAY_IN_MS = 24 * 60 * 60 * 1000
 
+export type FuryRange = "24h" | "1w" | "1m" | "3m" | "1y" | "3y"
+
+const rangeToMultiplier: Record<FuryRange, number> = {
+  "24h": 1,
+  "1w": 7,
+  "1m": 30,
+  "3m": 90,
+  "1y": 365,
+  "3y": 365 * 3,
+}
+
 const metricConfig = {
   humidity: {
     description: "Indoor moisture trend",
@@ -87,8 +98,8 @@ const parseMeasurement = (rawValue: string) => {
   return match ? Number(match[0]) : Number.NaN
 }
 
-const calculateSummary = (readings: FuryReading[]) => {
-  const since = Date.now() - DAY_IN_MS
+const calculateSummary = (readings: FuryReading[], sinceMs: number) => {
+  const since = Date.now() - sinceMs
   const recentValues = readings
     .filter((reading) => new Date(reading.updateTime).getTime() >= since)
     .map((reading) => reading.value)
@@ -135,6 +146,7 @@ const toReadings = (items: FuryApiItem[], field: MetricField) => {
 const fetchMetric = async <TMetricKey extends FuryMetricKey>(
   metric: TMetricKey,
   limit = SENSOR_LIMIT,
+  summarySinceMs = DAY_IN_MS,
 ): Promise<FuryMetricSnapshot> => {
   const config = metricConfig[metric]
   const response = await furyApi.get<FuryApiItem[]>(config.path, {
@@ -149,7 +161,7 @@ const fetchMetric = async <TMetricKey extends FuryMetricKey>(
     latest: readings[0] ?? null,
     previous: readings[1] ?? null,
     readings,
-    summary: calculateSummary(readings),
+    summary: calculateSummary(readings, summarySinceMs),
     unit: config.unit,
   }
 }
@@ -173,11 +185,17 @@ const buildRecentSamples = (
   }))
 }
 
-export const fetchFuryDashboard = async (): Promise<FuryDashboardData> => {
+export const fetchFuryDashboard = async (
+  range: FuryRange = "24h",
+): Promise<FuryDashboardData> => {
+  const multiplier = rangeToMultiplier[range] ?? 1
+  const limit = Math.max(1, Math.floor(SENSOR_LIMIT * multiplier))
+  const summarySinceMs = DAY_IN_MS * multiplier
+
   const [temperature, humidity, pressure] = await Promise.all([
-    fetchMetric("temperature"),
-    fetchMetric("humidity"),
-    fetchMetric("pressure"),
+    fetchMetric("temperature", limit, summarySinceMs),
+    fetchMetric("humidity", limit, summarySinceMs),
+    fetchMetric("pressure", limit, summarySinceMs),
   ])
 
   return {

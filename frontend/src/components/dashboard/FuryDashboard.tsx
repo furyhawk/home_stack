@@ -14,6 +14,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
+import { useState } from "react"
 
 import useAuth from "@/hooks/useAuth"
 
@@ -21,6 +22,7 @@ import {
   type FuryDashboardData,
   type FuryMetricKey,
   fetchFuryDashboard,
+  type FuryRange,
 } from "./furyDashboardApi"
 import SensorTrendChart from "./SensorTrendChart"
 
@@ -147,9 +149,11 @@ function DashboardLoading() {
 
 function FuryDashboard() {
   const { user: currentUser } = useAuth()
+  const [range, setRange] = useState<FuryRange>("24h")
+
   const { data, error, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ["fury-dashboard"],
-    queryFn: fetchFuryDashboard,
+    queryKey: ["fury-dashboard", range],
+    queryFn: () => fetchFuryDashboard(range),
     refetchInterval: 60_000,
     retry: 1,
   })
@@ -222,6 +226,26 @@ function FuryDashboard() {
               </HStack>
             </Flex>
 
+            <HStack mt={3} spacing={2}>
+              {([
+                ["24h", "24h"] ,
+                ["1w", "1w"],
+                ["1m", "1m"],
+                ["3m", "3m"],
+                ["1y", "1y"],
+                ["3y", "3y"],
+              ] as Array<[FuryRange, string]>).map(([key, label]) => (
+                <Button
+                  key={key}
+                  size="sm"
+                  variant={range === key ? "solid" : "ghost"}
+                  onClick={() => setRange(key)}
+                >
+                  {label}
+                </Button>
+              ))}
+            </HStack>
+
             <Text maxW="4xl">{buildComfortSummary(data)}</Text>
           </Card.Body>
         </Card.Root>
@@ -240,7 +264,7 @@ function FuryDashboard() {
                     </Heading>
                   </Box>
                   <Badge alignSelf="flex-start" colorScheme="gray">
-                    {metric.summary.count} pts / 24h
+                    {metric.summary.count} pts / {range}
                   </Badge>
                 </Flex>
 
