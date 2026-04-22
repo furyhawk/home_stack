@@ -143,16 +143,52 @@ const toReadings = (items: FuryApiItem[], field: MetricField) => {
     .filter((item): item is FuryReading => item !== null)
 }
 
+// Fetch a metric across a date range by requesting the external API in batches
+// using `start_date` and `end_date` query params. This avoids sending a very
+// large `limit` value that may be rejected by the API proxy.
 const fetchMetric = async <TMetricKey extends FuryMetricKey>(
   metric: TMetricKey,
-  limit = SENSOR_LIMIT,
   summarySinceMs = DAY_IN_MS,
 ): Promise<FuryMetricSnapshot> => {
   const config = metricConfig[metric]
-  const response = await furyApi.get<FuryApiItem[]>(config.path, {
-    params: { limit },
-  })
-  const readings = toReadings(response.data, config.field)
+
+  const endMs = Date.now()
+  const startMs = Math.max(0, endMs - summarySinceMs)
+
+  // size of each batch window (7 days)
+  const batchMs = DAY_IN_MS * 7
+  const maxIterations = 200
+
+  let currentEndMs = endMs
+  const allItems: FuryApiItem[] = []
+  let iterations = 0
+
+  while (currentEndMs > startMs && iterations < maxIterations) {
+    const currentStartMs = Math.max(startMs, currentEndMs - batchMs)
+    const params = {
+      start_date: new Date(currentStartMs).toISOString(),
+      end_date: new Date(currentEndMs).toISOString(),
+    }
+
+    try {
+      const response = await furyApi.get<FuryApiItem[]>(config.path, { params })
+      if (response.data && response.data.length > 0) {
+        allItems.push(...response.data)
+      }
+    } catch (err) {
+      // On request failure, break and use whatever we have so the dashboard
+      // can still render partial data.
+      break
+    }
+
+    // move the window back
+    currentEndMs = currentStartMs
+    iterations += 1
+  }
+
+  const readings = toReadings(allItems, config.field).sort(
+    (a, b) => new Date(b.updateTime).getTime() - new Date(a.updateTime).getTime(),
+  )
 
   return {
     description: config.description,
@@ -189,13 +225,12 @@ export const fetchFuryDashboard = async (
   range: FuryRange = "24h",
 ): Promise<FuryDashboardData> => {
   const multiplier = rangeToMultiplier[range] ?? 1
-  const limit = Math.max(1, Math.floor(SENSOR_LIMIT * multiplier))
   const summarySinceMs = DAY_IN_MS * multiplier
 
   const [temperature, humidity, pressure] = await Promise.all([
-    fetchMetric("temperature", limit, summarySinceMs),
-    fetchMetric("humidity", limit, summarySinceMs),
-    fetchMetric("pressure", limit, summarySinceMs),
+    fetchMetric("temperature", summarySinceMs),
+    fetchMetric("humidity", summarySinceMs),
+    fetchMetric("pressure", summarySinceMs),
   ])
 
   return {
