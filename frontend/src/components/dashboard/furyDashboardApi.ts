@@ -189,14 +189,20 @@ const fetchMetric = async <TMetricKey extends FuryMetricKey>(
     (a, b) => new Date(b.updateTime).getTime() - new Date(a.updateTime).getTime(),
   )
 
+  // Ensure the snapshot reflects only the requested range — some upstream
+  // proxies may ignore `start_date`/`end_date`, so filter client-side.
+  const filteredReadings = readings.filter(
+    (r) => new Date(r.updateTime).getTime() >= startMs,
+  )
+
   return {
     description: config.description,
     key: metric,
     label: config.label,
-    latest: readings[0] ?? null,
-    previous: readings[1] ?? null,
-    readings,
-    summary: calculateSummary(readings, summarySinceMs),
+    latest: filteredReadings[0] ?? null,
+    previous: filteredReadings[1] ?? null,
+    readings: filteredReadings,
+    summary: calculateSummary(filteredReadings, summarySinceMs),
     unit: config.unit,
   }
 }
