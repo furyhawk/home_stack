@@ -12,7 +12,6 @@ import {
   Table,
   Text,
   VStack,
-  useColorModeValue,
 } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 
@@ -262,27 +261,27 @@ function FuryDashboard() {
                 </Box>
 
                 <SimpleGrid columns={3} gap={3}>
-                  <Box bg={useColorModeValue("gray.50", "gray.700")} borderRadius="md" p={3}>
-                    <Text color={useColorModeValue("gray.500", "gray.400")} fontSize="xs" textTransform="uppercase">
+                  <Box bg="gray.50" _dark={{ bg: "gray.700" }} borderRadius="md" p={3}>
+                    <Text color="gray.500" _dark={{ color: "gray.400" }} fontSize="xs" textTransform="uppercase">
                       Average
                     </Text>
-                    <Text fontWeight="semibold" mt={1} color={useColorModeValue("gray.900", "white")}>
+                    <Text fontWeight="semibold" mt={1} color="gray.900" _dark={{ color: "white" }}>
                       {formatValue(metric.summary.average, metric.unit)}
                     </Text>
                   </Box>
-                  <Box bg={useColorModeValue("gray.50", "gray.700")} borderRadius="md" p={3}>
-                    <Text color={useColorModeValue("gray.500", "gray.400")} fontSize="xs" textTransform="uppercase">
+                  <Box bg="gray.50" _dark={{ bg: "gray.700" }} borderRadius="md" p={3}>
+                    <Text color="gray.500" _dark={{ color: "gray.400" }} fontSize="xs" textTransform="uppercase">
                       Low
                     </Text>
-                    <Text fontWeight="semibold" mt={1} color={useColorModeValue("gray.900", "white")}>
+                    <Text fontWeight="semibold" mt={1} color="gray.900" _dark={{ color: "white" }}>
                       {formatValue(metric.summary.min, metric.unit)}
                     </Text>
                   </Box>
-                  <Box bg={useColorModeValue("gray.50", "gray.700")} borderRadius="md" p={3}>
-                    <Text color={useColorModeValue("gray.500", "gray.400")} fontSize="xs" textTransform="uppercase">
+                  <Box bg="gray.50" _dark={{ bg: "gray.700" }} borderRadius="md" p={3}>
+                    <Text color="gray.500" _dark={{ color: "gray.400" }} fontSize="xs" textTransform="uppercase">
                       High
                     </Text>
-                    <Text fontWeight="semibold" mt={1} color={useColorModeValue("gray.900", "white")}>
+                    <Text fontWeight="semibold" mt={1} color="gray.900" _dark={{ color: "white" }}>
                       {formatValue(metric.summary.max, metric.unit)}
                     </Text>
                   </Box>
