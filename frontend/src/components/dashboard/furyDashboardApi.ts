@@ -156,8 +156,10 @@ const fetchMetric = async <TMetricKey extends FuryMetricKey>(
   const endMs = Date.now()
   const startMs = Math.max(0, endMs - summarySinceMs)
 
-  // size of each batch window (7 days)
-  const batchMs = DAY_IN_MS * 7
+  // size of each batch window. For short ranges (<= 7 days) fetch daily
+  // batches so a 1-week range will request seven 1-day windows. For longer
+  // ranges use 7-day windows to reduce iteration count.
+  const batchMs = summarySinceMs <= DAY_IN_MS * 7 ? DAY_IN_MS : DAY_IN_MS * 7
   const maxIterations = 200
 
   let currentEndMs = endMs
