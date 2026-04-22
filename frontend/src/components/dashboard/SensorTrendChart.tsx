@@ -86,7 +86,7 @@ function SensorTrendChart({ color, readings, title, unit, durationMs = 24 * 60 *
   const points = recentReadings.map((reading, index) => {
     const x =
       CHART_PADDING_X +
-      (index / Math.max(dayReadings.length - 1, 1)) * innerWidth
+      (index / Math.max(recentReadings.length - 1, 1)) * innerWidth
     const normalizedValue = (reading.value - minValue) / valueRange
     const y = CHART_HEIGHT - CHART_PADDING_Y - normalizedValue * innerHeight
 
@@ -139,7 +139,7 @@ function SensorTrendChart({ color, readings, title, unit, durationMs = 24 * 60 *
           width="100%"
           height="220"
           role="img"
-          aria-label={`${title} trend for the last 24 hours`}
+          aria-label={`${title} trend for the selected range`}
           preserveAspectRatio="none"
         >
           <defs>
