@@ -2,7 +2,6 @@ import { Box, Flex, Text } from "@chakra-ui/react"
 
 import type { FuryReading } from "./furyDashboardApi"
 
-const DAY_IN_MS = 24 * 60 * 60 * 1000
 const CHART_WIDTH = 640
 const CHART_HEIGHT = 220
 const CHART_PADDING_X = 18
@@ -14,6 +13,8 @@ interface SensorTrendChartProps {
   readings: FuryReading[]
   title: string
   unit: string
+  // duration in milliseconds to display (e.g. 24h, 7d)
+  durationMs?: number
 }
 
 const formatAxisValue = (value: number, unit: string) => {
@@ -21,22 +22,21 @@ const formatAxisValue = (value: number, unit: string) => {
   return `${value.toFixed(digits)}${unit}`
 }
 
-const formatTimeLabel = (isoDate: string) => {
+const formatTimeLabel = (isoDate: string, showDate = false) => {
   return new Intl.DateTimeFormat(undefined, {
+    month: showDate ? "short" : undefined,
+    day: showDate ? "2-digit" : undefined,
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(isoDate))
 }
 
-const getLastDayReadings = (readings: FuryReading[]) => {
-  const since = Date.now() - DAY_IN_MS
+const getRecentReadings = (readings: FuryReading[], durationMs: number) => {
+  const since = Date.now() - durationMs
 
   return readings
     .filter((reading) => new Date(reading.updateTime).getTime() >= since)
-    .sort(
-      (left, right) =>
-        new Date(left.updateTime).getTime() - new Date(right.updateTime).getTime(),
-    )
+    .sort((left, right) => new Date(left.updateTime).getTime() - new Date(right.updateTime).getTime())
 }
 
 const downsampleReadings = (readings: FuryReading[]) => {
@@ -55,10 +55,10 @@ const downsampleReadings = (readings: FuryReading[]) => {
   return sampled
 }
 
-function SensorTrendChart({ color, readings, title, unit }: SensorTrendChartProps) {
-  const dayReadings = downsampleReadings(getLastDayReadings(readings))
+function SensorTrendChart({ color, readings, title, unit, durationMs = 24 * 60 * 60 * 1000 }: SensorTrendChartProps) {
+  const recentReadings = downsampleReadings(getRecentReadings(readings, durationMs))
 
-  if (dayReadings.length < 2) {
+  if (recentReadings.length < 2) {
     return (
       <Box
         bg="gray.50"
@@ -70,20 +70,20 @@ function SensorTrendChart({ color, readings, title, unit }: SensorTrendChartProp
       >
         <Text fontWeight="medium">{title}</Text>
         <Text color="gray.500" fontSize="sm" mt={2}>
-          Not enough samples yet to draw a 24-hour chart.
+          Not enough samples yet to draw a chart for the selected range.
         </Text>
       </Box>
     )
   }
 
-  const values = dayReadings.map((reading) => reading.value)
+  const values = recentReadings.map((reading) => reading.value)
   const minValue = Math.min(...values)
   const maxValue = Math.max(...values)
   const valueRange = maxValue - minValue || 1
   const innerWidth = CHART_WIDTH - CHART_PADDING_X * 2
   const innerHeight = CHART_HEIGHT - CHART_PADDING_Y * 2
 
-  const points = dayReadings.map((reading, index) => {
+  const points = recentReadings.map((reading, index) => {
     const x =
       CHART_PADDING_X +
       (index / Math.max(dayReadings.length - 1, 1)) * innerWidth
@@ -113,7 +113,7 @@ function SensorTrendChart({ color, readings, title, unit }: SensorTrendChartProp
         <Box>
           <Text fontWeight="medium">{title}</Text>
           <Text color="gray.500" fontSize="sm">
-            Last 24 hours, sampled every few minutes
+            Last {Math.round(durationMs / (24 * 60 * 60 * 1000))} day(s), sampled
           </Text>
         </Box>
         <Box textAlign="right">
@@ -203,9 +203,9 @@ function SensorTrendChart({ color, readings, title, unit }: SensorTrendChartProp
         </svg>
 
         <Flex justify="space-between" mt={2} color="gray.500" fontSize="xs">
-          <Text>{formatTimeLabel(dayReadings[0].updateTime)}</Text>
-          <Text>{formatTimeLabel(dayReadings[midIndex].updateTime)}</Text>
-          <Text>{formatTimeLabel(dayReadings[dayReadings.length - 1].updateTime)}</Text>
+          <Text>{formatTimeLabel(recentReadings[0].updateTime, true)}</Text>
+          <Text>{formatTimeLabel(recentReadings[midIndex].updateTime)}</Text>
+          <Text>{formatTimeLabel(recentReadings[recentReadings.length - 1].updateTime, true)}</Text>
         </Flex>
       </Box>
     </Box>

@@ -5,11 +5,11 @@ const furyApi = axios.create({
   timeout: 15_000,
 })
 
-const DAY_IN_MS = 24 * 60 * 60 * 1000
+export const DAY_IN_MS = 24 * 60 * 60 * 1000
 
 export type FuryRange = "24h" | "1w" | "1m" | "3m" | "1y" | "3y"
 
-const rangeToMultiplier: Record<FuryRange, number> = {
+export const rangeToMultiplier: Record<FuryRange, number> = {
   "24h": 1,
   "1w": 7,
   "1m": 30,

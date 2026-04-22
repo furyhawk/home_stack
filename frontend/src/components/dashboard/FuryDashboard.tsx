@@ -23,6 +23,8 @@ import {
   type FuryMetricKey,
   fetchFuryDashboard,
   type FuryRange,
+  rangeToMultiplier,
+  DAY_IN_MS,
 } from "./furyDashboardApi"
 import SensorTrendChart from "./SensorTrendChart"
 
@@ -316,6 +318,7 @@ function FuryDashboard() {
                   readings={metric.readings}
                   title={`${metric.label} Trend`}
                   unit={metric.unit}
+                  durationMs={rangeToMultiplier[range] * DAY_IN_MS}
                 />
               </Card.Body>
             </Card.Root>
