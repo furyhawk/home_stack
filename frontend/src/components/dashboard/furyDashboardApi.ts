@@ -174,7 +174,9 @@ const fetchMetric = async <TMetricKey extends FuryMetricKey>(
     }
 
     try {
-      const response = await furyApi.get<FuryApiItem[]>(config.path, { params })
+      const response = await furyApi.get<FuryApiItem[]>(config.path, {
+        params: { ...params, limit: 1000 },
+      })
       if (response.data && response.data.length > 0) {
         allItems.push(...response.data)
       }
