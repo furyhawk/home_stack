@@ -144,9 +144,10 @@ const toReadings = (items: FuryApiItem[], field: MetricField) => {
     .filter((item): item is FuryReading => item !== null)
 }
 
-// Fetch a metric across a date range by requesting the external API in batches
-// using `start_date` and `end_date` query params. This avoids sending a very
-// large `limit` value that may be rejected by the API proxy.
+// Per-metric cache so frequent refreshes (60s) only fetch the latest samples
+// and reuse previously fetched data for the rest of the range.
+const metricCache: Partial<Record<FuryMetricKey, { items: FuryApiItem[]; lastFetchMs: number }>> = {}
+
 const fetchMetric = async <TMetricKey extends FuryMetricKey>(
   metric: TMetricKey,
   summarySinceMs = DAY_IN_MS,
@@ -156,47 +157,84 @@ const fetchMetric = async <TMetricKey extends FuryMetricKey>(
   const endMs = Date.now()
   const startMs = Math.max(0, endMs - summarySinceMs)
 
-  // size of each batch window. For short ranges (<= 7 days) fetch daily
-  // batches so a 1-week range will request seven 1-day windows. For longer
-  // ranges use 7-day windows to reduce iteration count.
+  // batch size: daily for short ranges, weekly for longer ranges
   const batchMs = summarySinceMs <= DAY_IN_MS * 7 ? DAY_IN_MS : DAY_IN_MS * 7
   const maxIterations = 200
 
-  let currentEndMs = endMs
+  const cache = metricCache[metric] ?? { items: [], lastFetchMs: 0 }
+
   const allItems: FuryApiItem[] = []
-  let iterations = 0
 
-  while (currentEndMs > startMs && iterations < maxIterations) {
-    const currentStartMs = Math.max(startMs, currentEndMs - batchMs)
-    const params = {
-      start_date: new Date(currentStartMs).toISOString(),
-      end_date: new Date(currentEndMs).toISOString(),
-    }
+  // If we have a recent cache (within the last 90s), perform an incremental
+  // fetch only for the window since the last cached timestamp. Otherwise
+  // perform a full batched fetch for the requested range.
+  const now = endMs
+  const lastFetchMs = cache.lastFetchMs || 0
+  const recentThreshold = 90_000
 
+  if (cache.items.length > 0 && now - lastFetchMs <= recentThreshold) {
+    // incremental fetch from lastFetchMs -> now
     try {
-      const response = await furyApi.get<FuryApiItem[]>(config.path, {
-        params: { ...params, limit: 1000 },
-      })
-      if (response.data && response.data.length > 0) {
-        allItems.push(...response.data)
+      const params = {
+        start_date: new Date(lastFetchMs).toISOString(),
+        end_date: new Date(now).toISOString(),
+        limit: 1000,
       }
+      const response = await furyApi.get<FuryApiItem[]>(config.path, { params })
+      if (response.data && response.data.length > 0) {
+        // merge and dedupe by id
+        const map = new Map<number, FuryApiItem>()
+        for (const it of cache.items) map.set(it.id, it)
+        for (const it of response.data) map.set(it.id, it)
+        allItems.push(...Array.from(map.values()))
+      } else {
+        allItems.push(...cache.items)
+      }
+      cache.lastFetchMs = now
     } catch (err) {
-      // On request failure, break and use whatever we have so the dashboard
-      // can still render partial data.
-      break
+      // on failure, fall back to cached items
+      allItems.push(...cache.items)
+    }
+  } else {
+    // full batched fetch over the requested range
+    let currentEndMs = endMs
+    let iterations = 0
+
+    while (currentEndMs > startMs && iterations < maxIterations) {
+      const currentStartMs = Math.max(startMs, currentEndMs - batchMs)
+      const params = {
+        start_date: new Date(currentStartMs).toISOString(),
+        end_date: new Date(currentEndMs).toISOString(),
+        limit: 1000,
+      }
+
+      try {
+        const response = await furyApi.get<FuryApiItem[]>(config.path, { params })
+        if (response.data && response.data.length > 0) {
+          allItems.push(...response.data)
+        }
+      } catch (err) {
+        break
+      }
+
+      currentEndMs = currentStartMs
+      iterations += 1
     }
 
-    // move the window back
-    currentEndMs = currentStartMs
-    iterations += 1
+    // update cache with full fetch
+    cache.items = allItems.slice()
+    cache.lastFetchMs = now
   }
 
-  const readings = toReadings(allItems, config.field).sort(
+  // ensure cache stored
+  metricCache[metric] = cache
+
+  // normalize, convert and sort
+  const readings = toReadings(allItems.length ? allItems : cache.items, config.field).sort(
     (a, b) => new Date(b.updateTime).getTime() - new Date(a.updateTime).getTime(),
   )
 
-  // Ensure the snapshot reflects only the requested range — some upstream
-  // proxies may ignore `start_date`/`end_date`, so filter client-side.
+  // client-side filter to the requested start time in case upstream ignored params
   const filteredReadings = readings.filter((r) => new Date(r.updateTime).getTime() >= startMs)
 
   return {
@@ -206,7 +244,7 @@ const fetchMetric = async <TMetricKey extends FuryMetricKey>(
     latest: filteredReadings[0] ?? null,
     previous: filteredReadings[1] ?? null,
     readings: filteredReadings,
-    totalFetched: allItems.length,
+    totalFetched: (allItems.length ? allItems.length : cache.items.length) || 0,
     summary: calculateSummary(filteredReadings, summarySinceMs),
     unit: config.unit,
   }
