@@ -141,7 +141,8 @@ const WeatherMap: React.FC<{ forecastData?: ApiNestedResponse<TwoHourForecastPay
     }
 
     const latestTempReading = tempReadings[0];
-    const latestWindReading = windReadings[0];
+    // We don't actually use latestWindReading, so we can remove the declaration
+    // const latestWindReading = windReadings[0];
 
     if (!latestTempReading || !latestTempReading.data) {
       return null;
@@ -149,7 +150,7 @@ const WeatherMap: React.FC<{ forecastData?: ApiNestedResponse<TwoHourForecastPay
 
     const latestReadingTime = formatTime(latestTempReading.timestamp);
     const tempStationMap = new Map(tempStations.map((st: AirTempStation) => [st.id, st]));
-    const windDataMap = new Map(latestWindReading?.data?.map((rd: WindDataPoint) => [rd.stationId, rd.value]) || []);
+    const windDataMap = new Map(windReadings[0]?.data?.map((rd: WindDataPoint) => [rd.stationId, rd.value]) || []);
 
     const getCardinalDirection = (deg: number | null | undefined) => {
       if (deg === null || deg === undefined) return 'N/A';
@@ -174,7 +175,6 @@ const WeatherMap: React.FC<{ forecastData?: ApiNestedResponse<TwoHourForecastPay
       forecasts,
       areaMetadata,
       latestTempReading,
-      latestWindReading,
       latestReadingTime,
       tempStationMap,
       windDataMap,
