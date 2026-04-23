@@ -275,4 +275,4 @@ const WeatherMap: React.FC<{ forecastData?: ApiNestedResponse<TwoHourForecastPay
   );
 };
 
-export default React.memo(WeatherMap);
+export default WeatherMap;

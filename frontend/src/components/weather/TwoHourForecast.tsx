@@ -79,4 +79,4 @@ const TwoHourForecast: React.FC = () => {
   );
 };
 
-export default React.memo(TwoHourForecast);
+export default TwoHourForecast;

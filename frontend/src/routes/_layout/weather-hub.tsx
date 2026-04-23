@@ -34,7 +34,7 @@ function WeatherHub() {
         <Separator my={4} />
       </Box>
 
-      <ChakraTabs.Root variant="enclosed" colorScheme="blue" defaultValue={tabValues.twoHour}>
+      <ChakraTabs.Root variant="enclosed" colorScheme="blue" defaultValue={tabValues.twoHour} lazyMount unmountOnExit>
         <ChakraTabs.List>
           <ChakraTabs.Trigger value={tabValues.twoHour}>2-Hour Forecast</ChakraTabs.Trigger>
           <ChakraTabs.Trigger value={tabValues.airTemp}>Air Temperature</ChakraTabs.Trigger>

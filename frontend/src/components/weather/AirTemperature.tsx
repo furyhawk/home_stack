@@ -73,4 +73,4 @@ const AirTemperature: React.FC = () => {
   );
 };
 
-export default React.memo(AirTemperature);
+export default AirTemperature;
