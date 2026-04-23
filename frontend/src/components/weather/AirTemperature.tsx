@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Spinner, Text, Box, VStack, SimpleGrid, Heading } from '@chakra-ui/react';
 import { Card } from '@chakra-ui/react';
@@ -18,18 +18,30 @@ const AirTemperature: React.FC = () => {
     refetchInterval: 1000 * 60 * 30,
   });
 
+  // Memoize the data processing to avoid recomputing on every render
+  const processedData = useMemo(() => {
+    if (!data?.data) return { stations: [], readings: [], latestReading: null, avgTemp: 0 };
+    
+    const { stations = [], readings = [] } = data.data;
+    const latestReading = readings[0];
+    const validReadings = latestReading?.data?.filter(r => r.value !== null) || [];
+    const avgTemp = validReadings.length > 0
+      ? validReadings.reduce((sum, r) => sum + r.value, 0) / validReadings.length
+      : 0;
+      
+    return { stations, readings, latestReading, avgTemp };
+  }, [data]);
+
   if (isLoading) return <Spinner />;
-  if (error || !data?.data) return <Text color="red.500">Error loading temperature data</Text>;
+  if (error || !processedData.stations.length || !processedData.readings.length) return <Text color="red.500">Error loading temperature data</Text>;
 
-  const { stations = [], readings = [] } = data.data;
-  if (stations.length === 0 || readings.length === 0) return <Text>No temperature data available</Text>;
-
-  const latestReading = readings[0];
+  const { stations, latestReading } = processedData;
+  
   if (!latestReading || !latestReading.data) return <Text>No temperature data available</Text>;
 
   const stationMap = new Map(stations.map(s => [s.id, s.name]));
   const validReadings = latestReading.data.filter(r => r.value !== null);
-  const avgTemp = validReadings.length > 0
+  const avgTempValue = validReadings.length > 0
     ? validReadings.reduce((sum, r) => sum + r.value, 0) / validReadings.length
     : 0;
 
@@ -39,7 +51,7 @@ const AirTemperature: React.FC = () => {
         <Card.Root>
           <Card.Body>
             <Heading size="md" mb={2}>Average Temperature</Heading>
-            <Text fontSize="3xl" fontWeight="bold">{avgTemp.toFixed(1)}°C</Text>
+            <Text fontSize="3xl" fontWeight="bold">{avgTempValue.toFixed(1)}°C</Text>
             <Text fontSize="sm" color="gray.500">Based on {validReadings.length} station readings</Text>
             <Text fontSize="xs" color="gray.400" mt={1}>Last updated: {new Date(latestReading.timestamp).toLocaleString()}</Text>
           </Card.Body>
@@ -61,4 +73,4 @@ const AirTemperature: React.FC = () => {
   );
 };
 
-export default AirTemperature;
+export default React.memo(AirTemperature);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Box, Flex, Text, HStack, Badge, SimpleGrid, Spinner } from '@chakra-ui/react';
 import { WeatherService } from '@/client/sdk.gen';
@@ -21,14 +21,21 @@ const TwoHourForecast: React.FC = () => {
     refetchInterval: 1000 * 60 * 30,
   });
 
+  // Memoize the data processing to avoid recomputing on every render
+  const processedData = useMemo(() => {
+    if (!data?.data) return { items: [], forecasts: [], validPeriod: null };
+    
+    const items = data.data.items || [];
+    const forecasts = items[0]?.forecasts || [];
+    const validPeriod = items[0]?.valid_period || null;
+    
+    return { items, forecasts, validPeriod };
+  }, [data]);
+
   if (isLoading) return <Spinner />;
-  if (error || !data?.data) return <Text color="red.500">Error loading forecast data</Text>;
+  if (error || !processedData.items.length) return <Text color="red.500">Error loading forecast data</Text>;
 
-  const items = data.data.items || [];
-  if (!items.length) return <Text>No forecast data available</Text>;
-
-  const forecasts = items[0].forecasts || [];
-  const validPeriod = items[0].valid_period;
+  const { forecasts, validPeriod } = processedData;
 
   return (
     <Box>
@@ -65,11 +72,11 @@ const TwoHourForecast: React.FC = () => {
       )}
       {viewMode === 'map' && (
         <Box height="500px" width="100%" borderRadius="md" overflow="hidden" my={4}>
-          <WeatherMap forecastData={data} />
+          <WeatherMap />
         </Box>
       )}
     </Box>
   );
 };
 
-export default TwoHourForecast;
+export default React.memo(TwoHourForecast);

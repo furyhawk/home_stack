@@ -1,4 +1,4 @@
-import {
+import React, {
   Badge,
   Box,
   Button,
@@ -14,7 +14,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 
 import useAuth from "@/hooks/useAuth"
 
@@ -160,11 +160,31 @@ function FuryDashboard() {
     retry: 1,
   })
 
+  // Memoize the data processing to avoid recomputing on every render
+  const processedData = useMemo(() => {
+    if (!data) return null;
+    
+    const latestSampleTimes = Object.values(data.metrics)
+      .map((metric) => metric.latest?.updateTime)
+      .filter((value): value is string => Boolean(value))
+      .sort((left, right) =>
+        new Date(right).getTime() - new Date(left).getTime(),
+      )
+    const newestSampleTime = latestSampleTimes[0] ?? data.generatedAt
+    const welcomeName = currentUser?.full_name || currentUser?.email || "there"
+    
+    return {
+      ...data,
+      newestSampleTime,
+      welcomeName
+    }
+  }, [data, currentUser])
+
   if (isLoading) {
     return <DashboardLoading />
   }
 
-  if (error || !data) {
+  if (error || !processedData) {
     return (
       <Container maxW="full" py={8}>
         <Card.Root>
@@ -182,14 +202,7 @@ function FuryDashboard() {
     )
   }
 
-  const latestSampleTimes = Object.values(data.metrics)
-    .map((metric) => metric.latest?.updateTime)
-    .filter((value): value is string => Boolean(value))
-    .sort((left, right) =>
-      new Date(right).getTime() - new Date(left).getTime(),
-    )
-  const newestSampleTime = latestSampleTimes[0] ?? data.generatedAt
-  const welcomeName = currentUser?.full_name || currentUser?.email || "there"
+  const { generatedAt, metrics, recentSamples, newestSampleTime, welcomeName } = processedData
 
   return (
     <Container maxW="full" py={8}>
@@ -248,12 +261,12 @@ function FuryDashboard() {
               ))}
             </HStack>
 
-            <Text maxW="4xl">{buildComfortSummary(data)}</Text>
+            <Text maxW="4xl">{buildComfortSummary(processedData)}</Text>
           </Card.Body>
         </Card.Root>
 
         <SimpleGrid columns={{ base: 1, lg: 3 }} gap={4}>
-          {Object.values(data.metrics).map((metric) => (
+          {Object.values(metrics).map((metric) => (
             <Card.Root key={metric.key}>
               <Card.Body gap={5}>
                 <Flex justify="space-between" gap={4}>
@@ -341,7 +354,7 @@ function FuryDashboard() {
                 </Text>
               </Box>
               <Text color="gray.500" fontSize="sm">
-                Last fetch {formatTimestamp(data.generatedAt)}
+                Last fetch {formatTimestamp(generatedAt)}
               </Text>
             </Flex>
 
@@ -355,7 +368,7 @@ function FuryDashboard() {
                 </Table.Row>
               </Table.Header>
               <Table.Body>
-                {data.recentSamples.map((sample) => (
+                {recentSamples.map((sample) => (
                   <Table.Row key={sample.updateTime}>
                     <Table.Cell>{formatTimestamp(sample.updateTime)}</Table.Cell>
                     <Table.Cell>{sample.temperature ?? "--"}</Table.Cell>
@@ -372,4 +385,4 @@ function FuryDashboard() {
   )
 }
 
-export default FuryDashboard
+export default React.memo(FuryDashboard)

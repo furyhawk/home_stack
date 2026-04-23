@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Spinner, Text, Box } from '@chakra-ui/react';
 import { MapContainer, TileLayer, Marker, Popup, ScaleControl, ZoomControl } from 'react-leaflet';
@@ -32,12 +32,6 @@ interface ForecastWithLocation {
   area: string;
   forecast: string;
   location: { latitude: number; longitude: number };
-}
-
-interface WeatherMapProps {
-  forecastData?: ApiNestedResponse<TwoHourForecastPayload>;
-  tempData?: ApiNestedResponse<AirTemperaturePayload>;
-  windData?: ApiNestedResponse<WindDirectionPayload>;
 }
 
 const center: [number, number] = [1.3521, 103.8198];
@@ -97,7 +91,7 @@ const makeForecastMarkerHtml = ({
   </div>
 `;
 
-const WeatherMap: React.FC<WeatherMapProps> = ({ forecastData, tempData, windData }) => {
+const WeatherMap: React.FC<{ forecastData?: ApiNestedResponse<TwoHourForecastPayload>; tempData?: ApiNestedResponse<AirTemperaturePayload>; windData?: ApiNestedResponse<WindDirectionPayload>; }> = ({ forecastData, tempData, windData }) => {
   const { data: fetchedTempData, isLoading: tempLoading, error: tempError } = useQuery<ApiNestedResponse<AirTemperaturePayload>>({
     queryKey: ['weather', 'air-temperature'],
     queryFn: () => WeatherService.getAirTemperature() as Promise<ApiNestedResponse<AirTemperaturePayload>>,
@@ -133,42 +127,76 @@ const WeatherMap: React.FC<WeatherMapProps> = ({ forecastData, tempData, windDat
     return <Text color="red.500">Error loading map data</Text>;
   }
 
-  const tempStations = actualTempData.data?.stations || [];
-  const tempReadings = actualTempData.data?.readings || [];
-  const windReadings = actualWindData.data?.readings || [];
-  const items = actualForecastData.data?.items || [];
-  const forecasts = items[0]?.forecasts || [];
-  const areaMetadata = actualForecastData.data?.area_metadata || [];
+  // Memoize the data processing to avoid recomputing on every render
+  const processedData = useMemo(() => {
+    const tempStations = actualTempData.data?.stations || [];
+    const tempReadings = actualTempData.data?.readings || [];
+    const windReadings = actualWindData.data?.readings || [];
+    const items = actualForecastData.data?.items || [];
+    const forecasts = items[0]?.forecasts || [];
+    const areaMetadata = actualForecastData.data?.area_metadata || [];
 
-  if (tempStations.length === 0 || tempReadings.length === 0) {
+    if (tempStations.length === 0 || tempReadings.length === 0) {
+      return null;
+    }
+
+    const latestTempReading = tempReadings[0];
+    const latestWindReading = windReadings[0];
+
+    if (!latestTempReading || !latestTempReading.data) {
+      return null;
+    }
+
+    const latestReadingTime = formatTime(latestTempReading.timestamp);
+    const tempStationMap = new Map(tempStations.map((st: AirTempStation) => [st.id, st]));
+    const windDataMap = new Map(latestWindReading?.data?.map((rd: WindDataPoint) => [rd.stationId, rd.value]) || []);
+
+    const getCardinalDirection = (deg: number | null | undefined) => {
+      if (deg === null || deg === undefined) return 'N/A';
+      const dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+      const idx = Math.round((deg % 360) / 22.5) % 16;
+      return dirs[idx];
+    };
+
+    const forecastsWithLocation = forecasts
+      .map(f => ({
+        area: f.area,
+        forecast: f.forecast,
+        location: areaMetadata.find(a => a.name === f.area)?.label_location,
+      }))
+      .filter(f => f.location) as ForecastWithLocation[];
+
+    return {
+      tempStations,
+      tempReadings,
+      windReadings,
+      items,
+      forecasts,
+      areaMetadata,
+      latestTempReading,
+      latestWindReading,
+      latestReadingTime,
+      tempStationMap,
+      windDataMap,
+      getCardinalDirection,
+      forecastsWithLocation
+    };
+  }, [actualTempData, actualWindData, actualForecastData]);
+
+  if (!processedData) {
     return <Text>No map data available</Text>;
   }
 
-  const latestTempReading = tempReadings[0];
-  const latestWindReading = windReadings[0];
-
-  if (!latestTempReading || !latestTempReading.data) {
-    return <Text>No map data available</Text>;
-  }
-
-  const latestReadingTime = formatTime(latestTempReading.timestamp);
-  const tempStationMap = new Map(tempStations.map((st: AirTempStation) => [st.id, st]));
-  const windDataMap = new Map(latestWindReading?.data?.map((rd: WindDataPoint) => [rd.stationId, rd.value]) || []);
-
-  const getCardinalDirection = (deg: number | null | undefined) => {
-    if (deg === null || deg === undefined) return 'N/A';
-    const dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
-    const idx = Math.round((deg % 360) / 22.5) % 16;
-    return dirs[idx];
-  };
-
-  const forecastsWithLocation = forecasts
-    .map(f => ({
-      area: f.area,
-      forecast: f.forecast,
-      location: areaMetadata.find(a => a.name === f.area)?.label_location,
-    }))
-    .filter(f => f.location) as ForecastWithLocation[];
+  const { 
+    tempStations,
+    latestTempReading,
+    latestWindReading,
+    latestReadingTime,
+    tempStationMap,
+    windDataMap,
+    getCardinalDirection,
+    forecastsWithLocation
+  } = processedData;
 
   return (
     <Box className="weather-map-shell">
@@ -249,4 +277,4 @@ const WeatherMap: React.FC<WeatherMapProps> = ({ forecastData, tempData, windDat
   );
 };
 
-export default WeatherMap;
+export default React.memo(WeatherMap);

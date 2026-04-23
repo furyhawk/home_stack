@@ -10,7 +10,13 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  plugins: [react(), TanStackRouterVite()],
+  plugins: [
+    react({
+      // Enable JSX runtime for React 19
+      jsxRuntime: "automatic"
+    }),
+    TanStackRouterVite(),
+  ],
   server: {
     allowedHosts: [
       "dev.lan",
@@ -28,6 +34,18 @@ export default defineConfig({
         changeOrigin: true,
         secure: true,
         rewrite: (path) => path.replace(/^\/fury-api/, ""),
+      },
+    },
+  },
+  build: {
+    // Enable tree-shaking by default
+    rollupOptions: {
+      output: {
+        // Split vendor code into separate chunks for better caching
+        manualChunks: {
+          vendor: ["react", "react-dom", "@tanstack/react-query", "@chakra-ui/react"],
+          leaflet: ["leaflet", "react-leaflet"],
+        },
       },
     },
   },
