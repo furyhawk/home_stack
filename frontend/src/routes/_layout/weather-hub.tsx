@@ -1,15 +1,11 @@
-import React from 'react';
 import { Container, Box, Heading, Text, Separator, Tabs as ChakraTabs } from '@chakra-ui/react';
 import { createFileRoute } from '@tanstack/react-router';
 
-// Lazy-load components to improve initial bundle size
-const TwoHourForecast = React.lazy(() => import('@/components/weather/TwoHourForecast'));
-const AirTemperature = React.lazy(() => import('@/components/weather/AirTemperature'));
-const FourDayOutlook = React.lazy(() => import('@/components/weather/FourDayOutlook'));
-const WeatherStatistics = React.lazy(() => import('@/components/weather/WeatherStatistics'));
-const WindDirection = React.lazy(() => import('@/components/weather/WindDirection'));
-// Note: WeatherMap is NOT lazy-loaded here because it's directly imported by TwoHourForecast
-// Lazy-loading it here would cause React to treat it as a different component instance
+import TwoHourForecast from '@/components/weather/TwoHourForecast';
+import AirTemperature from '@/components/weather/AirTemperature';
+import FourDayOutlook from '@/components/weather/FourDayOutlook';
+import WeatherStatistics from '@/components/weather/WeatherStatistics';
+import WindDirection from '@/components/weather/WindDirection';
 import WeatherMap from '@/components/weather/WeatherMap';
 
 const tabValues = {
@@ -36,7 +32,7 @@ function WeatherHub() {
         <Separator my={4} />
       </Box>
 
-      <ChakraTabs.Root variant="enclosed" colorScheme="blue" defaultValue={tabValues.twoHour} lazyMount unmountOnExit>
+      <ChakraTabs.Root variant="enclosed" colorScheme="blue" defaultValue={tabValues.twoHour}>
         <ChakraTabs.List>
           <ChakraTabs.Trigger value={tabValues.twoHour}>2-Hour Forecast</ChakraTabs.Trigger>
           <ChakraTabs.Trigger value={tabValues.airTemp}>Air Temperature</ChakraTabs.Trigger>
@@ -48,29 +44,19 @@ function WeatherHub() {
 
         <ChakraTabs.ContentGroup>
           <ChakraTabs.Content value={tabValues.twoHour}>
-            <React.Suspense fallback={<Box>Loading forecast...</Box>}>
-              <TwoHourForecast />
-            </React.Suspense>
+            <TwoHourForecast />
           </ChakraTabs.Content>
           <ChakraTabs.Content value={tabValues.airTemp}>
-            <React.Suspense fallback={<Box>Loading temperature...</Box>}>
-              <AirTemperature />
-            </React.Suspense>
+            <AirTemperature />
           </ChakraTabs.Content>
           <ChakraTabs.Content value={tabValues.fourDay}>
-            <React.Suspense fallback={<Box>Loading forecast...</Box>}>
-              <FourDayOutlook />
-            </React.Suspense>
+            <FourDayOutlook />
           </ChakraTabs.Content>
           <ChakraTabs.Content value={tabValues.stats}>
-            <React.Suspense fallback={<Box>Loading statistics...</Box>}>
-              <WeatherStatistics />
-            </React.Suspense>
+            <WeatherStatistics />
           </ChakraTabs.Content>
           <ChakraTabs.Content value={tabValues.windDir}>
-            <React.Suspense fallback={<Box>Loading wind data...</Box>}>
-              <WindDirection />
-            </React.Suspense>
+            <WindDirection />
           </ChakraTabs.Content>
           <ChakraTabs.Content value={tabValues.weatherMap}>
             <WeatherMap />
