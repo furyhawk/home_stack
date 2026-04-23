@@ -17,19 +17,11 @@ def read_items(
     """
     Retrieve items.
     """
-
     if current_user.is_superuser:
-        count_statement = select(func.count()).select_from(Item)
-        count = session.exec(count_statement).one()
         statement = select(Item).offset(skip).limit(limit)
         items = session.exec(statement).all()
+        count_statement = select(func.count()).select_from(Item)
     else:
-        count_statement = (
-            select(func.count())
-            .select_from(Item)
-            .where(Item.owner_id == current_user.id)
-        )
-        count = session.exec(count_statement).one()
         statement = (
             select(Item)
             .where(Item.owner_id == current_user.id)
@@ -37,6 +29,12 @@ def read_items(
             .limit(limit)
         )
         items = session.exec(statement).all()
+        count_statement = (
+            select(func.count())
+            .select_from(Item)
+            .where(Item.owner_id == current_user.id)
+        )
+    count = session.exec(count_statement).one()
 
     return ItemsPublic(data=items, count=count)
 

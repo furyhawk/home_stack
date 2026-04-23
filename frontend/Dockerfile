@@ -7,9 +7,10 @@ ARG VITE_API_URL
 ARG NODE_ENV=production
 ENV VITE_API_URL=${VITE_API_URL}
 
-COPY package*.json /app/
+COPY package.json package-lock.json /app/
 
-RUN NODE_ENV=development npm ci
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --cache=/root/.npm
 
 ENV NODE_ENV=${NODE_ENV}
 

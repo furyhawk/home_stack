@@ -13,7 +13,15 @@ Use this as the default operating guide for coding agents working here.
 ## Repository Layout
 - `backend/`: FastAPI app, SQLModel models, Alembic migrations, pytest suite, backend scripts.
 - `frontend/`: React 19 + TypeScript + Vite app, Chakra UI, TanStack Router, TanStack Query, Playwright tests.
+- `ai_stack/`: AI inference backends (llamacpp, ollama, speaches, vllm).
+- `esphome/`: ESPHome configuration for IoT devices.
+- `glance/`: Glance dashboard configuration.
+- `notebooks/`: Jupyter notebooks for AI/ML experiments (Gemma, Qwen, Whisper, Pydantic AI).
 - `scripts/`: top-level Docker and integration scripts.
+- `hooks/`: Copier project generation hooks.
+- `.github/`: GitHub workflows, issue/discussion templates, dependabot config.
+- `docker-compose*.yml`: Docker Compose configurations (base, override, traefik).
+- `makefile`: Make commands for common tasks.
 - `frontend/src/client/`: generated OpenAPI client; avoid manual edits.
 - `frontend/src/routeTree.gen.ts`: generated route tree; do not hand-edit.
 

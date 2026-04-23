@@ -2,9 +2,10 @@ FROM node:24
 
 WORKDIR /app
 
-COPY package*.json /app/
+COPY package.json package-lock.json /app/
 
-RUN npm install
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --cache=/root/.npm
 
 RUN npx -y playwright install --with-deps
 

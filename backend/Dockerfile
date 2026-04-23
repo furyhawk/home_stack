@@ -26,12 +26,13 @@ COPY ./pyproject.toml ./uv.lock ./alembic.ini /app/
 # Install dependencies
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
 RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=cache,target=/root/.cache/pip \
     uv pip install --system -e .
 
 ENV PYTHONPATH=/app
 
 # Copy application code and scripts
-COPY ./scripts /app/scripts
 COPY ./app /app/app
+COPY ./scripts /app/scripts
 
 CMD ["fastapi", "run", "--workers", "4", "app/main.py"]
