@@ -8,7 +8,9 @@ const AirTemperature = React.lazy(() => import('@/components/weather/AirTemperat
 const FourDayOutlook = React.lazy(() => import('@/components/weather/FourDayOutlook'));
 const WeatherStatistics = React.lazy(() => import('@/components/weather/WeatherStatistics'));
 const WindDirection = React.lazy(() => import('@/components/weather/WindDirection'));
-const WeatherMap = React.lazy(() => import('@/components/weather/WeatherMap'));
+// Note: WeatherMap is NOT lazy-loaded here because it's directly imported by TwoHourForecast
+// Lazy-loading it here would cause React to treat it as a different component instance
+import WeatherMap from '@/components/weather/WeatherMap';
 
 const tabValues = {
   twoHour: 'twoHourForecast',
@@ -71,9 +73,7 @@ function WeatherHub() {
             </React.Suspense>
           </ChakraTabs.Content>
           <ChakraTabs.Content value={tabValues.weatherMap}>
-            <React.Suspense fallback={<Box>Loading map...</Box>}>
-              <WeatherMap />
-            </React.Suspense>
+            <WeatherMap />
           </ChakraTabs.Content>
         </ChakraTabs.ContentGroup>
       </ChakraTabs.Root>
