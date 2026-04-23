@@ -15,6 +15,7 @@ import {
 } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { useState, useMemo } from "react"
+import React from "react"
 
 import useAuth from "@/hooks/useAuth"
 

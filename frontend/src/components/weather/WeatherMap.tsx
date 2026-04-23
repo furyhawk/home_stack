@@ -141,8 +141,7 @@ const WeatherMap: React.FC<{ forecastData?: ApiNestedResponse<TwoHourForecastPay
     }
 
     const latestTempReading = tempReadings[0];
-    // We don't actually use latestWindReading, so we can remove the declaration
-    // const latestWindReading = windReadings[0];
+
 
     if (!latestTempReading || !latestTempReading.data) {
       return null;
@@ -190,7 +189,6 @@ const WeatherMap: React.FC<{ forecastData?: ApiNestedResponse<TwoHourForecastPay
   const { 
     tempStations,
     latestTempReading,
-    latestWindReading,
     latestReadingTime,
     tempStationMap,
     windDataMap,
