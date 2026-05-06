@@ -1,11 +1,7 @@
 name: Add to Project
 
 on:
-  pull_request_target:
-  issues:
-    types:
-      - opened
-      - reopened
+  workflow_dispatch:
 
 jobs:
   add-to-project:
