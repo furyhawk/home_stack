@@ -5,7 +5,7 @@ import NotFound from "@/components/Common/NotFound"
 
 // Safely load Router Devtools without dependency on QueryClient
 const RouterDevtools = React.lazy(() => 
-  import("@tanstack/router-devtools").then(mod => ({
+  import("@tanstack/react-router-devtools").then(mod => ({
     default: mod.TanStackRouterDevtools
   }))
 );
