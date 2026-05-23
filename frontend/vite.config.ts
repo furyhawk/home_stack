@@ -13,7 +13,7 @@ export default defineConfig({
   plugins: [
     react({
       // Enable JSX runtime for React 19
-      jsxRuntime: "automatic"
+      jsxRuntime: "automatic",
     }),
     TanStackRouterVite(),
   ],
@@ -22,6 +22,7 @@ export default defineConfig({
       "dev.lan",
       "dev.local",
       "localhost",
+      "localhost:5173",
       "dev.lan:5173",
       "dev.local:5173",
       "localhost:5173",
@@ -43,10 +44,15 @@ export default defineConfig({
       output: {
         // Split vendor code into separate chunks for better caching
         manualChunks: {
-          vendor: ["react", "react-dom", "@tanstack/react-query", "@chakra-ui/react"],
+          vendor: [
+            "react",
+            "react-dom",
+            "@tanstack/react-query",
+            "@chakra-ui/react",
+          ],
           leaflet: ["leaflet", "react-leaflet"],
         },
       },
     },
   },
-})
+});
