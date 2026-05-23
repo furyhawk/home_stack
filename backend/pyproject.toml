@@ -16,8 +16,8 @@ dependencies = [
     "httpx<1.0.0,>=0.25.1",
     "psycopg[binary]>=3.3.4,<4.0.0",
     "sqlmodel<1.0.0,>=0.0.21",
-    # Pin bcrypt until passlib supports the latest
-    "bcrypt==5.0.0",
+    # Passlib 1.7.x is not fully compatible with bcrypt 5.x behavior.
+    "bcrypt>=4.1.3,<5.0.0",
     "pydantic-settings>=2.14.1,<3.0.0",
     "sentry-sdk[fastapi]<2.0.0,>=1.40.6",
     "pyjwt<3.0.0,>=2.8.0",
