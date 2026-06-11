@@ -19,4 +19,12 @@ dependencies = [
     "gradio>=5.9.0; python_version>'3.9'",
     "mcp[cli]>=1.4.1; python_version >= '3.10'",
     "groq>=0.28.0",
+    "pydantic-ai-backend>=0.2.11",
+    "pydantic-ai-harness[code-mode]",
+    "pydantic-ai-shields",
+    "pydantic-ai-skills",
+    "pydantic-ai-todo",
+    "pydantic-deep",
+    "subagents-pydantic-ai",
+    "summarization-pydantic-ai",
 ]
