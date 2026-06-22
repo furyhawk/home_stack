@@ -21,7 +21,7 @@ logfire.instrument_pydantic_ai()
 
 model = OpenAIChatModel(
     "llama",
-    provider=OpenAIProvider(base_url="http://localhost:8011/v1"),
+    provider=OpenAIProvider(base_url="http://192.168.50.158:8011/v1"),
 )
 
 agent = Agent(
